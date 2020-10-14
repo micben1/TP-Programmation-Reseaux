@@ -18,6 +18,7 @@ public class ClientThread
 	
 	private Socket clientSocket;
 	public static List<PrintStream> socOutList = Collections.synchronizedList(new ArrayList<PrintStream>());
+	String name = "";
 	
 	ClientThread(Socket s) {
 		this.clientSocket = s;
@@ -41,8 +42,18 @@ public class ClientThread
     		BufferedReader socIn = null;
     		socIn = new BufferedReader(
     			new InputStreamReader(clientSocket.getInputStream()));    
+    		String line;
     		while (true) {
-    		  String line = socIn.readLine();
+    		  line = socIn.readLine();
+    		  if (name.length() < 1) {
+    			  name = line;
+    			  line = name + " s'ests connecté(e) !";
+    		  }
+    		  if (line.equals(".") || line == null) {
+    			  System.out.println(name + "s'est déconnecté(e)");
+    			  sendMsg(name + "s'est déconnecté(e)", socOut);
+    			  break;
+    		  }
     		  System.out.println(line);
     		  sendMsg(line, socOut);
     		}

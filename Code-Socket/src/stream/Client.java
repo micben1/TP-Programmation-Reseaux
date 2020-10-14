@@ -23,6 +23,7 @@ public class Client {
         Socket clientSocket = null;
         PrintStream socOut = null;
         BufferedReader stdIn = null;
+        String name = "";
 
         if (args.length != 2) {
           System.out.println("Usage: java EchoClient <EchoServer host> <EchoServer port>");
@@ -46,12 +47,14 @@ public class Client {
         }
                              
         String line;
+        System.out.println("Pour vous déconnectez entrer '.'");
+        System.out.print("Entrez votre nom d'utilisateur: ");
     	ServerThread serverSocket = new ServerThread(clientSocket);
     	serverSocket.start();
         while (true) {
         	line=stdIn.readLine();
-        	if (line.equals(".")) break;
         	socOut.println(line);
+         	if (line.equals(".")) break;
         }
       socOut.close();
       stdIn.close();
