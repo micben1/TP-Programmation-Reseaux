@@ -8,6 +8,7 @@ package stream;
 
 import java.io.*;
 import java.net.*;
+import java.net.SocketException;
 
 
 
@@ -37,6 +38,24 @@ public class Client {
 		    stdIn = new BufferedReader(new InputStreamReader(System.in));
 		    System.out.println("Client running");
 	    
+	        String line;
+	        System.out.println("Pour vous déconnectez entrer '.'");
+	        System.out.print("Entrez votre nom d'utilisateur: ");
+	    	ServerThread serverSocket = new ServerThread(clientSocket);
+	    	serverSocket.start();
+	        while (true) {
+	        	line=stdIn.readLine();
+	        	socOut.println(line);
+	         	if (line.equals(".")) break;
+	        }
+	      socOut.close();
+	      stdIn.close();
+	      clientSocket.close();
+	      
+        } catch (SocketException exception) {
+        	System.out.println("deconnecté(e)");
+        	System.exit(1);
+        	
         } catch (UnknownHostException e) {
             System.err.println("Don't know about host:" + args[0]);
             System.exit(1);
@@ -46,19 +65,6 @@ public class Client {
             System.exit(1);
         }
                              
-        String line;
-        System.out.println("Pour vous dÃ©connectez entrer '.'");
-        System.out.print("Entrez votre nom d'utilisateur: ");
-    	ServerThread serverSocket = new ServerThread(clientSocket);
-    	serverSocket.start();
-        while (true) {
-        	line=stdIn.readLine();
-        	socOut.println(line);
-         	if (line.equals(".")) break;
-        }
-      socOut.close();
-      stdIn.close();
-      clientSocket.close();
     }
 }
 

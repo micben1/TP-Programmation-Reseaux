@@ -47,15 +47,17 @@ public class ClientThread
     		  line = socIn.readLine();
     		  if (name.length() < 1) {
     			  name = line;
-    			  line = name + " s'ests connectÃ©(e) !";
-    		  }
-    		  if (line.equals(".") || line == null) {
-    			  System.out.println(name + "s'est dÃ©connectÃ©(e)");
-    			  sendMsg(name + "s'est dÃ©connectÃ©(e)", socOut);
+    			  line = name + " s'est connecté(e) !";
+    			  System.out.println(line);
+    			  sendMsg(line, socOut);
+    		  } else if (line.equals(".") || line == null) {
+    			  System.out.println(name + "s'est déconnecté(e)");
+    			  sendMsg(name + " s'est déconnecté(e)", socOut);
     			  break;
+    		  } else {
+    			  System.out.println(line);
+    			  sendMsg(name + ": " + line, socOut);
     		  }
-    		  System.out.println(line);
-    		  sendMsg(line, socOut);
     		}
     	} catch (Exception e) {
         	System.err.println("Error in EchoServer:" + e); 
