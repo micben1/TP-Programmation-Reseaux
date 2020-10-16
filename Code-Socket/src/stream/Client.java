@@ -41,12 +41,15 @@ public class Client {
 	        String line;
 	        System.out.println("Pour vous déconnectez entrer '.'");
 	        System.out.print("Entrez votre nom d'utilisateur: ");
-	    	ServerThread serverSocket = new ServerThread(clientSocket);
+	        ServerListenerThread serverSocket = new ServerListenerThread(clientSocket);
 	    	serverSocket.start();
 	        while (true) {
 	        	line=stdIn.readLine();
 	        	socOut.println(line);
-	         	if (line.equals(".")) break;
+	         	if (line.equals(".")) {
+	         		serverSocket.closeConnection(); //close the input BufferedReader
+	         		break;
+	         	}
 	        }
 	      socOut.close();
 	      stdIn.close();

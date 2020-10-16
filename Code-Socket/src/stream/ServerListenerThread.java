@@ -3,13 +3,22 @@ package stream;
 import java.io.*;
 import java.net.Socket;
 
-public class ServerThread extends Thread {
+public class ServerListenerThread extends Thread {
 		
 	private Socket clientSocket;
 	private BufferedReader socIn;
 	
-	ServerThread(Socket s) {
+	ServerListenerThread(Socket s) {
 		this.clientSocket = s;
+	}
+	
+	public void closeConnection() { 
+	    try {
+	        socIn.close();
+	    } catch (IOException ex) {
+	        System.out.println("Error closing the socket and streams");
+	    }
+	 
 	}
 
  	/**
@@ -27,7 +36,7 @@ public class ServerThread extends Thread {
     	} catch (Exception e) {
         	System.err.println("Error in clientSocket:" + e); 
         }
-          //socIn.close();
        }
 
 }
+

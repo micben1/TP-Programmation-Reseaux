@@ -53,10 +53,13 @@ public class ClientThread
     		  } else if (line.equals(".") || line == null) {
     			  System.out.println(name + "s'est déconnecté(e)");
     			  sendMsg(name + " s'est déconnecté(e)", socOut);
+    			  socOut.close();
+    			  socIn.close();
     			  break;
     		  } else {
+    			  line = name + ": " + line;
     			  System.out.println(line);
-    			  sendMsg(name + ": " + line, socOut);
+    			  sendMsg(line, socOut);
     		  }
     		}
     	} catch (Exception e) {
