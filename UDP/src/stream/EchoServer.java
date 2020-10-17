@@ -21,11 +21,7 @@ public class EchoServer  {
     		BufferedReader socIn = null;
     		socIn = new BufferedReader(
     			new InputStreamReader(clientSocket.getInputStream()));    
-    		PrintStream socOut = new PrintStream(clientSocket.getOutputStream());
-    		while (true) {
-    		  String line = socIn.readLine();
-    		  socOut.println(line);
-    		}
+
     	} catch (Exception e) {
         	System.err.println("Error in EchoServer:" + e); 
         }
