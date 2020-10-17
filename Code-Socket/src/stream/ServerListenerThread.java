@@ -18,7 +18,6 @@ public class ServerListenerThread extends Thread {
 	    } catch (IOException ex) {
 	        System.out.println("Error closing the socket and streams");
 	    }
-	 
 	}
 
  	/**

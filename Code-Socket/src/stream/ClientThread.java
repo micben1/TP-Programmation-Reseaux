@@ -42,16 +42,26 @@ public class ClientThread
 	static void sendHistoric(PrintStream currentSocOut) {
 		if (historic.length() > 0) {
 			System.out.println("historic");
-			currentSocOut.println(historic);
+			currentSocOut.print(historic);
 		}
 				
 	}
+	
+	void updateHistoric(String line, PrintWriter pw) {
+	  pw.write(line + "\n");
+	  pw.flush();
+	  historic += line + "\n";
+	}
+	
  	/**
   	* receives a request from client then sends an echo to the client
   	* @param clientSocket the client socket
   	**/
 	public void run() {
     	  try {
+	    	FileWriter fileWriter = new FileWriter("./Code-Socket/files/historic.txt", true);
+	    	BufferedWriter bw = new BufferedWriter(fileWriter);
+			PrintWriter pw = new PrintWriter(bw);
   			PrintStream socOut = new PrintStream(clientSocket.getOutputStream());
   			socOutList.add(socOut);
     		BufferedReader socIn = null;
@@ -66,21 +76,27 @@ public class ClientThread
     			  System.out.println(line);
     			  sendMsg(line, socOut);
     			  sendHistoric(socOut);
+    			  updateHistoric(line, pw);
     		  } else if (line.equals(".") || line == null) {
     			  System.out.println(name + " s'est déconnecté(e)");
     			  sendMsg(name + " s'est déconnecté(e)", socOut);
+    			  updateHistoric(name + " s'est déconnecté(e)", pw);
     			  deleteSoc(socOut);
+    			  pw.close();
     			  break;
     		  } else {
     			  line = name + ": " + line;
     			  System.out.println(line);
-    			  historic += line + "\n"; 
     			  sendMsg(line, socOut);
+    			  updateHistoric(line, pw);
     		  }
     		}
     	} catch (SocketException exception) {
         	System.exit(1);
         	
+        } catch (IOException e) {
+            System.out.println("An error occurred.");
+            e.printStackTrace();
         } catch (Exception e) {
         	System.err.println("Error in EchoServer:" + e); 
         }

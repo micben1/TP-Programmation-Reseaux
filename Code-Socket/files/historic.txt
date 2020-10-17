@@ -1,0 +1,9 @@
+pl s'est connecté(e) !
+pl: hello
+mike s'est connecté(e) !
+mike: bonjour
+pl s'est déconnecté(e)
+Fin s'est connecté(e) !
+Fin: hola
+mike s'est déconnecté(e)
+Fin s'est déconnecté(e)
