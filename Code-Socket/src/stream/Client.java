@@ -1,9 +1,3 @@
-/***
- * EchoClient
- * Example of a TCP client 
- * Date: 10/01/04
- * Authors:
- */
 package stream;
 
 import java.io.*;
@@ -41,18 +35,18 @@ public class Client {
 	        String line;
 	        System.out.println("Pour vous déconnectez entrer '.'");
 	        System.out.print("Entrez votre nom d'utilisateur: ");
-	        ServerListenerThread serverSocket = new ServerListenerThread(clientSocket);
-	    	serverSocket.start();
+	        ServerListenerThread listenerSocket = new ServerListenerThread(clientSocket);
+	        listenerSocket.start();
 	        while (true) {
 	        	line=stdIn.readLine();
 	        	socOut.println(line);
 	         	if (line.equals(".")) {
-	         		serverSocket.closeConnection(); //close the input BufferedReader
 	         		break;
 	         	}
 	        }
-	      socOut.close();
 	      stdIn.close();
+   		  listenerSocket.closeConnection(); //close the input BufferedReader
+   		  socOut.close();
 	      clientSocket.close();
 	      
         } catch (SocketException exception) {
@@ -70,5 +64,3 @@ public class Client {
                              
     }
 }
-
-

@@ -18,19 +18,34 @@ public class ClientThread
 	
 	private Socket clientSocket;
 	public static List<PrintStream> socOutList = Collections.synchronizedList(new ArrayList<PrintStream>());
+	public static String historic = "";
 	String name = "";
 	
 	ClientThread(Socket s) {
 		this.clientSocket = s;
 	}
 
-	static void sendMsg(String line, PrintStream currentSoc) {
+	static void sendMsg(String line, PrintStream currentSocOut) {
 	  for(int i = 0; i < socOutList.size(); i ++) {
-		  if (socOutList.get(i) != currentSoc) {
+		  if (socOutList.get(i) != currentSocOut) {
 			  socOutList.get(i).println(line);
 		  }
 	  }
      }
+	static void deleteSoc(PrintStream socOut) {
+	  for(int i = 0; i < socOutList.size(); i ++) {
+		  if (socOutList.get(i) == socOut) {
+			  socOutList.remove(i);
+		  }
+	  }
+	}
+	static void sendHistoric(PrintStream currentSocOut) {
+		if (historic.length() > 0) {
+			System.out.println("historic");
+			currentSocOut.println(historic);
+		}
+				
+	}
  	/**
   	* receives a request from client then sends an echo to the client
   	* @param clientSocket the client socket
@@ -50,19 +65,23 @@ public class ClientThread
     			  line = name + " s'est connecté(e) !";
     			  System.out.println(line);
     			  sendMsg(line, socOut);
+    			  sendHistoric(socOut);
     		  } else if (line.equals(".") || line == null) {
-    			  System.out.println(name + "s'est déconnecté(e)");
+    			  System.out.println(name + " s'est déconnecté(e)");
     			  sendMsg(name + " s'est déconnecté(e)", socOut);
-    			  socOut.close();
-    			  socIn.close();
+    			  deleteSoc(socOut);
     			  break;
     		  } else {
     			  line = name + ": " + line;
     			  System.out.println(line);
+    			  historic += line + "\n"; 
     			  sendMsg(line, socOut);
     		  }
     		}
-    	} catch (Exception e) {
+    	} catch (SocketException exception) {
+        	System.exit(1);
+        	
+        } catch (Exception e) {
         	System.err.println("Error in EchoServer:" + e); 
         }
        }
