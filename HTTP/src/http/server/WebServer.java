@@ -3,11 +3,11 @@
 package http.server;
 
 import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStreamReader;
-import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -29,9 +29,8 @@ public class WebServer {
    */
   protected void start() {
     ServerSocket s;
-    BufferedReader socIn;
 
-    System.out.println("Webserver starting up on port 3000");
+    System.out.println("Webserver starting up on port 80");
     System.out.println("(press ctrl-c to exit)");
     try {
       // create the main server socket
@@ -48,7 +47,7 @@ public class WebServer {
         Socket remote = s.accept();
         // remote is now the connected socket
         System.out.println("Connection, sending data.");
-        socIn = new BufferedReader(new InputStreamReader(
+        BufferedReader in = new BufferedReader(new InputStreamReader(
             remote.getInputStream()));
         PrintWriter out = new PrintWriter(remote.getOutputStream());
 
@@ -57,16 +56,16 @@ public class WebServer {
         // blank line signals the end of the client HTTP
         // headers.
         String str = ".";
-        while (str != null && !str.equals(""))
-          str = socIn.readLine();
-        String arr[] = str.split(" ");
-        String method = arr[0];
-        String url = arr[1].substring(1,arr[1].length());
-        // Send the response
-        if (method.equals("GET")) {
-        	httpGET(out, url);
+        String completeMessage = "";
+        while (str != null && !str.equals("")) {
+        	str = in.readLine();
+        	if (str ==  null) break;
+        	completeMessage  += str + "\n";
         }
         
+        readHeader(completeMessage);
+
+        // Send the response
         // Send the headers
         out.println("HTTP/1.0 200 OK");
         out.println("Content-Type: text/html");
@@ -83,12 +82,45 @@ public class WebServer {
     }
   }
   
-  public void httpGET(PrintWriter socOut, String url){
-	  String header = makeHeader("200 OK");
-	  File ressource = new File(url);
-	  if (ressource.exists() && ressource.isFile()) {
-		/* get ressource */
+  void readHeader (String header) {
+	  if (header != null && header.length() > 0) {
+		  String arr[] = header.split(" ");
+	      String method = arr[0];
+	      String url = arr[1].substring(1,arr[1].length());
+	      System.out.println("method: " + method);
+	      System.out.println("url: " + url);
 	  }
+	  
+	 /* switch(method) {
+	  case "GET":
+		  httpGET(out, url);
+		  break;
+	  }*/
+  }
+  
+  public void httpGET(BufferedOutputStream socOut, String url){
+	  String header =  "";
+	  File ressource = new File("./HTTP/ressources/" + url);
+	  try {
+		  if (ressource.exists() && ressource.isFile()) {
+			  header = makeHeader("200 OK");
+			/* get ressource */
+		  } else {
+			  header = makeHeader("404 not Found");
+		  }
+		  BufferedInputStream fileIn = new BufferedInputStream(new FileInputStream(ressource));
+			byte[] buffer = new byte[256];
+			int nbRead;
+			while((nbRead = fileIn.read(buffer)) != -1) {
+				socOut.write(buffer, 0, nbRead);
+			}
+			fileIn.close();
+			
+			socOut.flush();
+	  } catch(Exception e) {
+		  header = makeHeader("500 Internal Server Error");
+	  }
+	  
   }
   
   public String makeHeader(String status) {
