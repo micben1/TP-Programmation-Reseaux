@@ -7,6 +7,7 @@ import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.ServerSocket;
@@ -49,7 +50,8 @@ public class WebServer {
         System.out.println("Connection, sending data.");
         BufferedReader in = new BufferedReader(new InputStreamReader(
             remote.getInputStream()));
-        PrintWriter out = new PrintWriter(remote.getOutputStream());
+        // PrintWriter out = new PrintWriter(remote.getOutputStream());
+	    BufferedOutputStream bufOut = new BufferedOutputStream(remote.getOutputStream());
 
         // read the data sent. We basically ignore it,
         // stop reading once a blank line is hit. This
@@ -62,19 +64,11 @@ public class WebServer {
         	if (str ==  null) break;
         	completeMessage  += str + "\n";
         }
+		
+        readHeader(completeMessage, bufOut);
         
-        readHeader(completeMessage);
+		bufOut.close();
 
-        // Send the response
-        // Send the headers
-        out.println("HTTP/1.0 200 OK");
-        out.println("Content-Type: text/html");
-        out.println("Server: Bot");
-        // this blank line signals the end of the headers
-        out.println("");
-        // Send the HTML page
-        out.println("<H1>Welcome to the Ultra Mini-WebServer</H2>");
-        out.flush();
         remote.close();
       } catch (Exception e) {
         System.out.println("Error: " + e);
@@ -82,41 +76,61 @@ public class WebServer {
     }
   }
   
-  void readHeader (String header) {
-	  if (header != null && header.length() > 0) {
-		  String arr[] = header.split(" ");
-	      String method = arr[0];
-	      String url = arr[1].substring(1,arr[1].length());
-	      System.out.println("method: " + method);
-	      System.out.println("url: " + url);
-	  }
-	  
-	 /* switch(method) {
-	  case "GET":
-		  httpGET(out, url);
-		  break;
-	  }*/
-  }
-  
-  public void httpGET(BufferedOutputStream socOut, String url){
-	  String header =  "";
-	  File ressource = new File("./HTTP/ressources/" + url);
-	  try {
-		  if (ressource.exists() && ressource.isFile()) {
-			  header = makeHeader("200 OK");
-			/* get ressource */
-		  } else {
-			  header = makeHeader("404 not Found");
-		  }
-		  BufferedInputStream fileIn = new BufferedInputStream(new FileInputStream(ressource));
+  void writeFileInBufOut (File ressource, BufferedOutputStream bufOut, String url) {
+	  try {      
+			BufferedInputStream fileIn = new BufferedInputStream(new FileInputStream(ressource));
+			// Envoi du corps : le fichier (page HTML, image, vid�o...)
 			byte[] buffer = new byte[256];
 			int nbRead;
 			while((nbRead = fileIn.read(buffer)) != -1) {
-				socOut.write(buffer, 0, nbRead);
+				bufOut.write(buffer, 0, nbRead);
 			}
+			// Fermeture du flux de lecture
 			fileIn.close();
+	  } catch (IOException e) {
+		  e.printStackTrace();
+			try {
+				bufOut.write(makeHeader("500 Internal Server Error").getBytes());
+				bufOut.flush();
+			} catch (Exception e2) {};
+	  }
+  }
+  
+  void readHeader (String header, BufferedOutputStream bufOut) {
+	  String method = "";
+	  String url = "";
+	  if (header != null && header.length() > 0) {
+		  String arr[] = header.split(" ");
+		  method = arr[0];
+		  url = arr[1].substring(1,arr[1].length());
+		  System.out.println("method: " + method);
+		  System.out.println("url: " + url);
+	  }
+
+	  switch(method) {
+	  	case "GET":
+		  httpGET(bufOut, url);
+		  break;
+		default:
+			System.out.println("error");
+	  }
+  }
+  
+  public void httpGET(BufferedOutputStream bufOut, String url){
+	  String header =  "";
+	  File ressource = new File("./ressources/" + url);
+	  try {
+		  if (ressource.exists() && ressource.isFile()) {
+			  header = makeHeader("200 OK");
+			  bufOut.write(header.getBytes());
+			  writeFileInBufOut(ressource, bufOut, "./ressources/" + url);
+			  bufOut.flush();
 			
-			socOut.flush();
+		  } else {
+			  header = makeHeader("404 not Found");
+			  bufOut.write(header.getBytes());
+			  bufOut.flush();
+		  }
 	  } catch(Exception e) {
 		  header = makeHeader("500 Internal Server Error");
 	  }
@@ -124,7 +138,13 @@ public class WebServer {
   }
   
   public String makeHeader(String status) {
-	  return "HTTP/1.0" + status + "\r\n";
+	  String header = "HTTP/1.0 " + status + "\r\n";
+	  header += "Content-Type: text/html\r\n";
+	  header += "Server: Bot\r\n";
+	  // this blank line signals the end of the headers
+	  header += "\r\n";
+	  System.out.println(header);
+	  return header;
   }
   /**
    * Start the application.
