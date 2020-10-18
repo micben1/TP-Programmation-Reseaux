@@ -31,7 +31,7 @@ public class WebServer {
   protected void start() {
     ServerSocket s;
 
-    System.out.println("Webserver starting up on port 80");
+    System.out.println("Webserver starting up on port 3000");
     System.out.println("(press ctrl-c to exit)");
     try {
       // create the main server socket
@@ -61,11 +61,23 @@ public class WebServer {
         String completeMessage = "";
         while (str != null && !str.equals("")) {
         	str = in.readLine();
-        	if (str ==  null) break;
+        	if (str == null) {
+        		break;
+        	}
         	completeMessage  += str + "\n";
         }
-		
-        readHeader(completeMessage, bufOut);
+        String[] headerInfo = new String[2];
+        readHeader(completeMessage, headerInfo);
+        String method = headerInfo[0];
+        String url = headerInfo[1];
+        
+        switch(method) {
+        case "GET":
+        	httpGET(bufOut, url);
+        	break;
+        default:
+        	System.out.println("method pas implémenté");
+        }
         
 		bufOut.close();
 
@@ -79,71 +91,93 @@ public class WebServer {
   void writeFileInBufOut (File ressource, BufferedOutputStream bufOut, String url) {
 	  try {      
 			BufferedInputStream fileIn = new BufferedInputStream(new FileInputStream(ressource));
-			// Envoi du corps : le fichier (page HTML, image, vid�o...)
 			byte[] buffer = new byte[256];
 			int nbRead;
 			while((nbRead = fileIn.read(buffer)) != -1) {
 				bufOut.write(buffer, 0, nbRead);
 			}
-			// Fermeture du flux de lecture
 			fileIn.close();
 	  } catch (IOException e) {
 		  e.printStackTrace();
 			try {
-				bufOut.write(makeHeader("500 Internal Server Error").getBytes());
+				bufOut.write("500 Internal Server Error".getBytes());
 				bufOut.flush();
 			} catch (Exception e2) {};
 	  }
   }
   
-  void readHeader (String header, BufferedOutputStream bufOut) {
-	  String method = "";
-	  String url = "";
-	  if (header != null && header.length() > 0) {
-		  String arr[] = header.split(" ");
-		  method = arr[0];
-		  url = arr[1].substring(1,arr[1].length());
-		  System.out.println("method: " + method);
-		  System.out.println("url: " + url);
+  void readHeader (String completeMsg, String[] headerInfo) {
+	  if (completeMsg != null && completeMsg.length() > 0) {
+		  String arr[] = completeMsg.split(" ");
+		  //method
+		  headerInfo[0] = arr[0];
+		  //url
+		  headerInfo[1] = arr[1].substring(1,arr[1].length());
+		  System.out.println("method: " + headerInfo[0]);
+		  System.out.println("url: " +  headerInfo[1]);
+		  //System.out.println();
+		  //System.out.println(completeMsg);
+		  //System.out.println();
+		  //String[] a = completeMsg.split("\n\\s*\n");
+		  //System.out.println("header: " + a[0]);
+		  //System.out.println("body: " +  a[1]);
 	  }
 
-	  switch(method) {
-	  	case "GET":
-		  httpGET(bufOut, url);
-		  break;
-		default:
-			System.out.println("error");
-	  }
+  }
+  
+  void readBody () {
+	  
   }
   
   public void httpGET(BufferedOutputStream bufOut, String url){
 	  String header =  "";
+	  String arr[] = url.split("\\.");
+	  String extension = arr[1];
 	  File ressource = new File("./ressources/" + url);
 	  try {
 		  if (ressource.exists() && ressource.isFile()) {
-			  header = makeHeader("200 OK");
+			  header = makeHeader("200 OK", extension);
 			  bufOut.write(header.getBytes());
 			  writeFileInBufOut(ressource, bufOut, "./ressources/" + url);
 			  bufOut.flush();
-			
 		  } else {
-			  header = makeHeader("404 not Found");
-			  bufOut.write(header.getBytes());
+			  bufOut.write("404 not Found".getBytes());
 			  bufOut.flush();
 		  }
 	  } catch(Exception e) {
-		  header = makeHeader("500 Internal Server Error");
+		  try {
+			  bufOut.write("500 Internal Server Error".getBytes());
+		  } catch (Exception e2) {}
 	  }
-	  
   }
   
-  public String makeHeader(String status) {
+  public String makeHeader(String status, String extension) {
 	  String header = "HTTP/1.0 " + status + "\r\n";
-	  header += "Content-Type: text/html\r\n";
+	  String type = "";
+	  
+	  // transformer en hash map et gérer les erreurs fichier audio s'il y a temps
+	  if (extension.equals("htm") || extension.equals("html")) type = "text/html";
+	  else if (extension.equals("mp3")) type = "audio/mpeg";
+	  else if (extension.equals("avi")) type = "video/x-msvideo";
+	  else if (extension.equals("css")) type = "text/css";
+	  else if (extension.equals("csv")) type = "text/csv";
+	  else if (extension.equals("gif")) type = "image/gif";
+	  else if (extension.equals("aac")) type = "audio/aac";  
+	  else if (extension.equals("jpeg") || extension.equals("jpg")) type = "image/jpeg";
+	  else if (extension.equals("json")) type = "application/json";
+	  else if (extension.equals("pdf")) type = "application/pdf";
+	  else if (extension.equals("png")) type = "image/png";
+	  else if (extension.equals("xhtml")) type = "application/xhtml+xml";
+	  else if (extension.equals("xml")) type = "application/xml";
+	  else if (extension.equals("png")) type = "image/png";
+	  else type = "application/octet-stream";
+	  
+	  // type = "text/html";
+	  System.out.println(type);
+	  header += "Content-Type: "+ type +"\r\n";
 	  header += "Server: Bot\r\n";
 	  // this blank line signals the end of the headers
 	  header += "\r\n";
-	  System.out.println(header);
 	  return header;
   }
   /**
