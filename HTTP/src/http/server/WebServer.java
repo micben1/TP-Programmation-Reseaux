@@ -7,6 +7,7 @@ import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
@@ -58,32 +59,24 @@ public class WebServer {
         // blank line signals the end of the client HTTP
         // headers.
         String str = ".";
-        String header = "";
-        while (str != null && !str.isEmpty()) {
-    		str = in.readLine();
-    		header  += str + "\n";
-      	}
-        
-        //Gère le premier msg nul
-        if (!header.substring(0, 4).equals("null") && header.length() > 5) {
-        	String[] headerInfo = new String[4];
-        	/*
-        	headerInfo:
-        	0: method (GET, PUT, etc.)
-        	1: URL
-        	2: body length
-        	3: body content
-        	*/
-            readHeader(header, headerInfo);
+        String completeMessage = "";
+        boolean msgNull = false;
+        while (str != null && !str.equals("")) {
+        		str = in.readLine();
+        	if (str == null) {
+        		msgNull = true;
+        		break;
+        	} else {
+        	completeMessage  += str + "\n";
+        	}
+        }
+
+        if (!msgNull) {
+        	String[] headerInfo = new String[2];
+            readHeader(completeMessage, headerInfo);
             String method = headerInfo[0];
             String url = headerInfo[1];
-            // int bodyLength = Integer.parseInt(headerInfo[2]);
             
-            for (int i = 0; i < 4; i++) {
-            	System.out.println(headerInfo[i]);
-            }
-            // String body = readBody(in, bodyLength);
-            // System.out.println(body);
             switch(method) {
             case "GET":
             	httpGET(bufOut, url);
@@ -94,79 +87,72 @@ public class WebServer {
             case "DELETE":
                 httpDELETE(bufOut, url);
                 break;
+            case "PUT":
+            	httpPUT(bufOut, url);
+            	break;
+            case "POST":
+            	httpPOST(bufOut, url);
+            	break;
             default:
-            	System.out.println("method pas impl�ment�");
+            	System.out.println("method pas implemente");
             }
         }
         
 		bufOut.close();
+
         remote.close();
       } catch (Exception e) {
-    	e.printStackTrace();
         System.out.println("Error: " + e);
       }
     }
   }
  
-  void readHeader (String completeMsg, String[] headerInfo) {
-	  if (completeMsg != null && completeMsg.length() > 0) {
-		  String arr[] = completeMsg.split("[ \n]");
-		  //method
-		  headerInfo[0] = arr[0];
-		  //url
-		  headerInfo[1] = arr[1].substring(1,arr[1].length());
-		  for (int u = 0; u<arr.length; u++) {
-			  if (arr[u].indexOf("Length") != -1) {
-				  headerInfo[2] = arr[u+1];
-			  }
-			  if (arr[u].indexOf("Type") != -1) {
-				  headerInfo[3] = arr[u+1];
-			  }
-		  }
-	  }
-  }
-  
-  String readBody (BufferedReader in, int length) {
-	  String body = "";
-	  try {
-		  char buff[] = new char[length];
-		  in.read(buff, 0, length);
-		  body = new String(buff);
-	  } catch(Exception e) {
-		  e.printStackTrace();
-	  }
-	  return body;
-  }
-  
-private void httpDELETE(BufferedOutputStream bufOut, String url) {
+
+
+private void httpPOST(BufferedOutputStream bufOut, String url) {
+	
+	
+}
+
+
+
+private void httpPUT(BufferedOutputStream bufOut, String url) {
+	String content = "<h1>teseeeeeeeeeeeeet<h1>";
 	String header =  "";
 	  String arr[] = url.split("\\.");
 	  String extension = arr[1];
 	  File ressource = new File("./ressources/" + url);
 	  try {
+		  
+		  PrintWriter dc = new PrintWriter(ressource); //Eface le continue de fichier avant
+		  dc.close();
+		  
+		  bufOut.write(header.getBytes());
+		  writeFileInBufOut(ressource, bufOut, "./ressources/" + url);
+		  bufOut.flush();
+		 
+		  
 		  if (ressource.exists() && ressource.isFile()) {
-			  ressource.delete();
-			  header = makeHeader("200 OK", extension);
+			  header = makeHeader("403 No Content", extension);
 			  bufOut.write(header.getBytes());
-			  bufOut.flush();
-		  } else if (!ressource.exists()){
-			  header = makeHeader("404 not Found", null);
-			  bufOut.write(header.getBytes());
+			  bufOut.write(content.getBytes());
 			  bufOut.flush();
 		  } else {
-			  header = makeHeader("403 Forbidden", null);
+			  header = makeHeader("401 Created", null);
 			  bufOut.write(header.getBytes());
-			  bufOut.flush(); 
-		  }  
+			  bufOut.write(content.getBytes());
+			  bufOut.flush();
+		  }
 	  } catch(Exception e) {
-		  e.printStackTrace();
 		  try {
 			  header = makeHeader("500 Internal Server Error", null);
 			  bufOut.write(header.getBytes());
+			  bufOut.flush();
 		  } catch (Exception e2) {}
 	  }
 }
 	
+
 
 
 void writeFileInBufOut (File ressource, BufferedOutputStream bufOut, String url) {
@@ -188,6 +174,29 @@ void writeFileInBufOut (File ressource, BufferedOutputStream bufOut, String url)
 	  }
   }
   
+  void readHeader (String completeMsg, String[] headerInfo) {
+	  if (completeMsg != null && completeMsg.length() > 0) {
+		  String arr[] = completeMsg.split(" ");
+		  //method
+		  headerInfo[0] = arr[0];
+		  //url
+		  headerInfo[1] = arr[1].substring(1,arr[1].length());
+		  //System.out.println("method: " + headerInfo[0]);
+		  //System.out.println("url: " +  headerInfo[1]);
+		  //System.out.println();
+		  //System.out.println(completeMsg);
+		  //System.out.println();
+		  //String[] a = completeMsg.split("\n\\s*\n");
+		  //System.out.println("header: " + a[0]);
+		  //System.out.println("body: " +  a[1]);
+	  }
+
+  }
+  
+  void readBody () {
+	  
+  }
+  
   public void httpGET(BufferedOutputStream bufOut, String url){
 	  String header =  "";
 	  String arr[] = url.split("\\.");
@@ -205,7 +214,6 @@ void writeFileInBufOut (File ressource, BufferedOutputStream bufOut, String url)
 			  bufOut.flush();
 		  }
 	  } catch(Exception e) {
-		  e.printStackTrace();
 		  try {
 			  header = makeHeader("500 Internal Server Error", null);
 			  bufOut.write(header.getBytes());
@@ -213,6 +221,34 @@ void writeFileInBufOut (File ressource, BufferedOutputStream bufOut, String url)
 		  } catch (Exception e2) {}
 	  }
   }
+  
+  private void httpDELETE(BufferedOutputStream bufOut, String url) {
+		String header =  "";
+		  String arr[] = url.split("\\.");
+		  String extension = arr[1];
+		  File ressource = new File("./ressources/" + url);
+		  try {
+			  if (ressource.exists() && ressource.isFile()) {
+				  ressource.delete();
+				  header = makeHeader("200 OK", extension);
+				  bufOut.write(header.getBytes());
+				  bufOut.flush();
+			  } else if (!ressource.exists()){
+				  header = makeHeader("404 not Found", null);
+				  bufOut.write(header.getBytes());
+				  bufOut.flush();
+			  } else {
+				  header = makeHeader("403 Forbidden", null);
+				  bufOut.write(header.getBytes());
+				  bufOut.flush(); 
+			  }  
+		  } catch(Exception e) {
+			  try {
+				  header = makeHeader("500 Internal Server Error", null);
+				  bufOut.write(header.getBytes());
+			  } catch (Exception e2) {}
+		  }
+	}
   
   private void httpHEAD(BufferedOutputStream bufOut, String url) {
 	  String header =  "";
@@ -230,7 +266,6 @@ void writeFileInBufOut (File ressource, BufferedOutputStream bufOut, String url)
 			  bufOut.flush();
 		  }
 	  } catch(Exception e) {
-		  e.printStackTrace();
 		  try {
 			  header = makeHeader("500 Internal Server Error", null);
 			  bufOut.write(header.getBytes());
