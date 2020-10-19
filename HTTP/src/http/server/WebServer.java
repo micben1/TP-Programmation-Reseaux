@@ -59,13 +59,17 @@ public class WebServer {
         // headers.
         String str = ".";
         String completeMessage = "";
+        boolean msgNull = false;
         while (str != null && !str.equals("")) {
-        	str = in.readLine();
+        		str = in.readLine();
         	if (str == null) {
+        		msgNull = true;
         		break;
-        	}
+        	} else {
         	completeMessage  += str + "\n";
+        	}
         }
+
         String[] headerInfo = new String[2];
         readHeader(completeMessage, headerInfo);
         String method = headerInfo[0];
@@ -82,7 +86,7 @@ public class WebServer {
             httpDELETE(bufOut, url);
             break;
         default:
-        	System.out.println("method pas implémenté");
+        	System.out.println("method pas implï¿½mentï¿½");
         }
         
 		bufOut.close();
@@ -146,8 +150,8 @@ void writeFileInBufOut (File ressource, BufferedOutputStream bufOut, String url)
 		  headerInfo[0] = arr[0];
 		  //url
 		  headerInfo[1] = arr[1].substring(1,arr[1].length());
-		  System.out.println("method: " + headerInfo[0]);
-		  System.out.println("url: " +  headerInfo[1]);
+		  //System.out.println("method: " + headerInfo[0]);
+		  //System.out.println("url: " +  headerInfo[1]);
 		  //System.out.println();
 		  //System.out.println(completeMsg);
 		  //System.out.println();
@@ -209,9 +213,10 @@ void writeFileInBufOut (File ressource, BufferedOutputStream bufOut, String url)
 	  String header = "HTTP/1.0 " + status + "\r\n";
 	  String type = "";
 	  
-	  // transformer en hash map et gérer les erreurs fichier audio s'il y a temps
+	  // transformer en hash map et gï¿½rer les erreurs fichier audio s'il y a temps
 	  if (extension.equals("htm") || extension.equals("html")) type = "text/html";
 	  else if (extension.equals("mp3")) type = "audio/mpeg";
+	  else if (extension.equals("mp4")) type = "vidÃ©o/mp4";
 	  else if (extension.equals("avi")) type = "video/x-msvideo";
 	  else if (extension.equals("css")) type = "text/css";
 	  else if (extension.equals("csv")) type = "text/csv";
@@ -226,8 +231,6 @@ void writeFileInBufOut (File ressource, BufferedOutputStream bufOut, String url)
 	  else if (extension.equals("png")) type = "image/png";
 	  else type = "application/octet-stream";
 	  
-	  // type = "text/html";
-	  System.out.println(type);
 	  header += "Content-Type: "+ type +"\r\n";
 	  header += "Server: Bot\r\n";
 	  // this blank line signals the end of the headers
