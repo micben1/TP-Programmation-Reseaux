@@ -12,10 +12,9 @@ public class MulticastReceiverThread extends Thread {
 	   String name;
 	   MulticastSocket socketReception;
 
-	   MulticastReceiverThread(InetAddress groupIP, int port, String name)  throws Exception { 
+	   MulticastReceiverThread(InetAddress groupIP, int port)  throws Exception { 
 		   this.groupIP = groupIP;
 		   this.port = port;
-		   this.name = name;
 		   socketReception = new MulticastSocket(port); //socket relié au port retenu
 		   socketReception.joinGroup(groupIP); //socket indique qu'il joint le groupe en indiquant l'adresse IP virtuelle de ce groupe
 		   start();  //attendre des datagrammes par le socket
@@ -34,7 +33,6 @@ public class MulticastReceiverThread extends Thread {
 		              
 		              
 		        text = (new DataInputStream(new ByteArrayInputStream(messageContent))).readLine();
-		       if (!text.startsWith(name)) continue; //Evitar que el cliente reciba su mismo mensaje
 		       System.out.println(text);
 			  }
 			  catch(Exception e) {
