@@ -75,8 +75,14 @@ public class WebServer {
         case "GET":
         	httpGET(bufOut, url);
         	break;
+        case "HEAD":
+        	httpHEAD(bufOut, url);
+        	break;
+        case "DELETE":
+            httpDELETE(bufOut, url);
+            break;
         default:
-        	System.out.println("method pas implÃ©mentÃ©");
+        	System.out.println("method pas implémenté");
         }
         
 		bufOut.close();
@@ -87,8 +93,35 @@ public class WebServer {
       }
     }
   }
-  
-  void writeFileInBufOut (File ressource, BufferedOutputStream bufOut, String url) {
+ 
+private void httpDELETE(BufferedOutputStream bufOut, String url) {
+	String header =  "";
+	  String arr[] = url.split("\\.");
+	  String extension = arr[1];
+	  File ressource = new File("./ressources/" + url);
+	  try {
+		  if (ressource.exists() && ressource.isFile()) {
+			  ressource.delete();
+			  header = makeHeader("200 OK", extension);
+			  bufOut.write(header.getBytes());
+			  bufOut.flush();
+		  } else if (!ressource.exists()){
+			  bufOut.write("404 not Found".getBytes());
+			  bufOut.flush();
+		  } else {
+			  bufOut.write("403 Forbidden".getBytes());
+			  bufOut.flush(); 
+		  }  
+	  } catch(Exception e) {
+		  try {
+			  bufOut.write("500 Internal Server Error".getBytes());
+		  } catch (Exception e2) {}
+	  }
+}
+	
+
+
+void writeFileInBufOut (File ressource, BufferedOutputStream bufOut, String url) {
 	  try {      
 			BufferedInputStream fileIn = new BufferedInputStream(new FileInputStream(ressource));
 			byte[] buffer = new byte[256];
@@ -151,11 +184,32 @@ public class WebServer {
 	  }
   }
   
+  private void httpHEAD(BufferedOutputStream bufOut, String url) {
+	  String header =  "";
+	  String arr[] = url.split("\\.");
+	  String extension = arr[1];
+	  File ressource = new File("./ressources/" + url);
+	  try {
+		  if (ressource.exists() && ressource.isFile()) {
+			  header = makeHeader("200 OK", extension);
+			  bufOut.write(header.getBytes());
+			  bufOut.flush();
+		  } else {
+			  bufOut.write("404 not Found".getBytes());
+			  bufOut.flush();
+		  }
+	  } catch(Exception e) {
+		  try {
+			  bufOut.write("500 Internal Server Error".getBytes());
+		  } catch (Exception e2) {}
+	  }
+  }
+  
   public String makeHeader(String status, String extension) {
 	  String header = "HTTP/1.0 " + status + "\r\n";
 	  String type = "";
 	  
-	  // transformer en hash map et gÃ©rer les erreurs fichier audio s'il y a temps
+	  // transformer en hash map et gérer les erreurs fichier audio s'il y a temps
 	  if (extension.equals("htm") || extension.equals("html")) type = "text/html";
 	  else if (extension.equals("mp3")) type = "audio/mpeg";
 	  else if (extension.equals("avi")) type = "video/x-msvideo";
