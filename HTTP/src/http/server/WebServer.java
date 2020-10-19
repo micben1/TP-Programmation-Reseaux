@@ -70,23 +70,25 @@ public class WebServer {
         	}
         }
 
-        String[] headerInfo = new String[2];
-        readHeader(completeMessage, headerInfo);
-        String method = headerInfo[0];
-        String url = headerInfo[1];
-        
-        switch(method) {
-        case "GET":
-        	httpGET(bufOut, url);
-        	break;
-        case "HEAD":
-        	httpHEAD(bufOut, url);
-        	break;
-        case "DELETE":
-            httpDELETE(bufOut, url);
-            break;
-        default:
-        	System.out.println("method pas impl�ment�");
+        if (!msgNull) {
+        	String[] headerInfo = new String[2];
+            readHeader(completeMessage, headerInfo);
+            String method = headerInfo[0];
+            String url = headerInfo[1];
+            
+            switch(method) {
+            case "GET":
+            	httpGET(bufOut, url);
+            	break;
+            case "HEAD":
+            	httpHEAD(bufOut, url);
+            	break;
+            case "DELETE":
+                httpDELETE(bufOut, url);
+                break;
+            default:
+            	System.out.println("method pas impl�ment�");
+            }
         }
         
 		bufOut.close();
@@ -110,15 +112,18 @@ private void httpDELETE(BufferedOutputStream bufOut, String url) {
 			  bufOut.write(header.getBytes());
 			  bufOut.flush();
 		  } else if (!ressource.exists()){
-			  bufOut.write("404 not Found".getBytes());
+			  header = makeHeader("404 not Found", null);
+			  bufOut.write(header.getBytes());
 			  bufOut.flush();
 		  } else {
-			  bufOut.write("403 Forbidden".getBytes());
+			  header = makeHeader("403 Forbidden", null);
+			  bufOut.write(header.getBytes());
 			  bufOut.flush(); 
 		  }  
 	  } catch(Exception e) {
 		  try {
-			  bufOut.write("500 Internal Server Error".getBytes());
+			  header = makeHeader("500 Internal Server Error", null);
+			  bufOut.write(header.getBytes());
 		  } catch (Exception e2) {}
 	  }
 }
@@ -137,7 +142,8 @@ void writeFileInBufOut (File ressource, BufferedOutputStream bufOut, String url)
 	  } catch (IOException e) {
 		  e.printStackTrace();
 			try {
-				bufOut.write("500 Internal Server Error".getBytes());
+				String header = makeHeader("500 Internal Server Error", null);
+				bufOut.write(header.getBytes());
 				bufOut.flush();
 			} catch (Exception e2) {};
 	  }
@@ -178,12 +184,15 @@ void writeFileInBufOut (File ressource, BufferedOutputStream bufOut, String url)
 			  writeFileInBufOut(ressource, bufOut, "./ressources/" + url);
 			  bufOut.flush();
 		  } else {
-			  bufOut.write("404 not Found".getBytes());
+			  header = makeHeader("404 not Found", null);
+			  bufOut.write(header.getBytes());
 			  bufOut.flush();
 		  }
 	  } catch(Exception e) {
 		  try {
-			  bufOut.write("500 Internal Server Error".getBytes());
+			  header = makeHeader("500 Internal Server Error", null);
+			  bufOut.write(header.getBytes());
+			  bufOut.flush();
 		  } catch (Exception e2) {}
 	  }
   }
@@ -199,12 +208,14 @@ void writeFileInBufOut (File ressource, BufferedOutputStream bufOut, String url)
 			  bufOut.write(header.getBytes());
 			  bufOut.flush();
 		  } else {
-			  bufOut.write("404 not Found".getBytes());
+			  header = makeHeader("404 not Found", null);
+			  bufOut.write(header.getBytes());
 			  bufOut.flush();
 		  }
 	  } catch(Exception e) {
 		  try {
-			  bufOut.write("500 Internal Server Error".getBytes());
+			  header = makeHeader("500 Internal Server Error", null);
+			  bufOut.write(header.getBytes());
 		  } catch (Exception e2) {}
 	  }
   }
@@ -212,26 +223,27 @@ void writeFileInBufOut (File ressource, BufferedOutputStream bufOut, String url)
   public String makeHeader(String status, String extension) {
 	  String header = "HTTP/1.0 " + status + "\r\n";
 	  String type = "";
-	  
-	  // transformer en hash map et g�rer les erreurs fichier audio s'il y a temps
-	  if (extension.equals("htm") || extension.equals("html")) type = "text/html";
-	  else if (extension.equals("mp3")) type = "audio/mpeg";
-	  else if (extension.equals("mp4")) type = "vidéo/mp4";
-	  else if (extension.equals("avi")) type = "video/x-msvideo";
-	  else if (extension.equals("css")) type = "text/css";
-	  else if (extension.equals("csv")) type = "text/csv";
-	  else if (extension.equals("gif")) type = "image/gif";
-	  else if (extension.equals("aac")) type = "audio/aac";  
-	  else if (extension.equals("jpeg") || extension.equals("jpg")) type = "image/jpeg";
-	  else if (extension.equals("json")) type = "application/json";
-	  else if (extension.equals("pdf")) type = "application/pdf";
-	  else if (extension.equals("png")) type = "image/png";
-	  else if (extension.equals("xhtml")) type = "application/xhtml+xml";
-	  else if (extension.equals("xml")) type = "application/xml";
-	  else if (extension.equals("png")) type = "image/png";
-	  else type = "application/octet-stream";
-	  
-	  header += "Content-Type: "+ type +"\r\n";
+	  if (extension != null) {
+		  // transformer en hash map et g�rer les erreurs fichier audio s'il y a temps
+		  if (extension.equals("htm") || extension.equals("html")) type = "text/html";
+		  else if (extension.equals("mp3")) type = "audio/mpeg";
+		  else if (extension.equals("mp4")) type = "vidéo/mp4";
+		  else if (extension.equals("avi")) type = "video/x-msvideo";
+		  else if (extension.equals("css")) type = "text/css";
+		  else if (extension.equals("csv")) type = "text/csv";
+		  else if (extension.equals("gif")) type = "image/gif";
+		  else if (extension.equals("aac")) type = "audio/aac";  
+		  else if (extension.equals("jpeg") || extension.equals("jpg")) type = "image/jpeg";
+		  else if (extension.equals("json")) type = "application/json";
+		  else if (extension.equals("pdf")) type = "application/pdf";
+		  else if (extension.equals("png")) type = "image/png";
+		  else if (extension.equals("xhtml")) type = "application/xhtml+xml";
+		  else if (extension.equals("xml")) type = "application/xml";
+		  else if (extension.equals("png")) type = "image/png";
+		  else type = "application/octet-stream";
+		  
+		  header += "Content-Type: "+ type +"\r\n";
+	  }
 	  header += "Server: Bot\r\n";
 	  // this blank line signals the end of the headers
 	  header += "\r\n";
