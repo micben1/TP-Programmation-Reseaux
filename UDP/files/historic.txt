@@ -1,0 +1,23 @@
+pl s'est connecté(e) !
+pl: hello
+mike s'est connecté(e) !
+mike: bonjour
+pl s'est déconnecté(e)
+Fin s'est connecté(e) !
+Fin: hola
+mike s'est déconnecté(e)
+Fin s'est déconnecté(e)
+Finan s'est connecté(e) !
+PL s'est connecté(e) !
+Finan: Bonjour
+PL: Coucou
+Finan: TG
+Theo s'est connecté(e) !
+Theo s'est déconnecté(e)
+Mike s'est connecté(e) !
+PL s'est connecté(e) !
+PL: bonjour
+Mike: Hola
+Mike: Como te vas
+PL s'est déconnecté(e)
+Alex s'est connecté(e) !
