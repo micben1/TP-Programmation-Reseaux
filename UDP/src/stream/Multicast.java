@@ -1,5 +1,7 @@
 package stream;
 
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
 import java.net.InetAddress;
 
 /**
@@ -11,14 +13,16 @@ import java.net.InetAddress;
  */
 
 public class Multicast {
-	
-   public static void main(String[] arg) throws Exception{ 
-		String name = arg[0];
+
+	public static void main(String[] arg) throws Exception{ 
+		BufferedReader stdIn = new BufferedReader(new InputStreamReader(System.in));
+		System.out.print("Entrez votre nom d'utilisateur: ");
+		String name = stdIn.readLine();
 		InetAddress groupIP = InetAddress.getByName("224.6.6.6");
 		int port = 8088; 
 		/** Le thread en charge de recevoir du message*/
 		new MulticastReceiverThread(groupIP, port);
 		/** Le thread en charge de l'envoi du message*/
 		new MulticastTransmitterThread(groupIP, port, name);
-   }
+	}
 }
