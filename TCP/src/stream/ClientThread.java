@@ -65,7 +65,6 @@ public class ClientThread
 	 */
 	static void sendHistoric(PrintStream currentSocOut) {
 		if (historic.length() > 0) {
-			System.out.println("historic");
 			currentSocOut.print(historic);
 		}
 				
@@ -87,7 +86,7 @@ public class ClientThread
   	**/
 	public void run() {
     	  try {
-	    	FileWriter fileWriter = new FileWriter("./files/historic.txt", true);
+	    	FileWriter fileWriter = new FileWriter("./ressources/historic.txt", true);
 	    	BufferedWriter bw = new BufferedWriter(fileWriter);
 			PrintWriter pw = new PrintWriter(bw);
   			PrintStream socOut = new PrintStream(clientSocket.getOutputStream());

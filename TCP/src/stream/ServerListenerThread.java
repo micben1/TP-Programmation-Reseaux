@@ -33,6 +33,7 @@ public class ServerListenerThread extends Thread {
 	    try {
 	        socIn.close();
 	    } catch (IOException ex) {
+	    	ex.printStackTrace();
 	        System.out.println("Error closing the socket and streams");
 	    }
 	}

@@ -18,11 +18,8 @@ import java.net.Socket;
 import java.util.HashMap;
 
 /**
- * Server Web TP Réseau INSA Lyon
- * 2020
- * 
- * WebServer est serveur web gérant differente requete (GET, POST, DELETE, etc.)
- * permettant d'acceder ou d'ajouter des ressources au serveur
+ * WebServer est serveur web gérant differentes requetes (GET, POST, DELETE, etc.)
+ * permettant d'acceder ou d'ajouter des ressources au serveur.
  * 
  * @author Mickeal Bensaid et Pierre-Louis JALLERAT
  * @version 1.0
@@ -313,7 +310,7 @@ public class WebServer {
 	 * Traite les requetes PUT et répond au client web.
 	 * La methode PUT cree une nouvelle ressource ou remplace une representation 
 	 * de la ressource ciblee par le contenu de la requete.
-	 * Actuellement le serveur ne gère que les fichier txt et html
+	 * Actuellement le serveur ne gère que les fichier txt et html.
 	 * @param in
 	 * 	Flux de donnees entrant (depuis le client web).
 	 * @param bufOut
@@ -372,7 +369,7 @@ public class WebServer {
 	 * La methode POST envoie des donnees au serveur. Si la ressource existe, elle ajoute des données
 	 * a la ressource (elle ne l'écrase pas)
 	 * Le type du corps de la requete est indiqué par l'entete Content-Type.
-	 * Actuellement le serveur ne gère que les fichier txt et html
+	 * Actuellement le serveur ne gère que les fichier txt et html.
 	 * @param in
 	 * 	Flux de donnees entrant (depuis le client web).
 	 * @param bufOut

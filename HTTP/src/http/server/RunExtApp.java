@@ -7,10 +7,10 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 
 /**
- *  Executer une application extérieur.
+ *  Executer une application exterieur.
  *  Attend la fin de l'execution.
- *  Récupère la réponse de l'application (écoute de son flux sortant).
- *  Ecrit la réponse de l'application dans le flux sortant vers le client
+ *  Recupere la reponse de l application (ecoute de son flux sortant).
+ *  Ecrit la reponse de l application dans le flux sortant vers le client
  * 
  * @author Pierre-Louis Jallerat
  *
