@@ -54,13 +54,8 @@ public class WebServer {
 				System.out.println("Connection, sending data.");
 				BufferedReader in = new BufferedReader(new InputStreamReader(
 						remote.getInputStream()));
-				// PrintWriter out = new PrintWriter(remote.getOutputStream());
 				BufferedOutputStream bufOut = new BufferedOutputStream(remote.getOutputStream());
 
-				// read the data sent. We basically ignore it,
-				// stop reading once a blank line is hit. This
-				// blank line signals the end of the client HTTP
-				// headers.
 				String str = ".";
 				String header = "";
 				while (str != null && !str.isEmpty()) {
@@ -68,7 +63,7 @@ public class WebServer {
 					header  += str + "\n";
 				}
 
-				//Gère le premier message nul
+				//Gere le premier message nul
 				if (!header.substring(0, 4).equals("null") && header.length() > 5) {
 					String[] headerInfo = new String[4];
 					/*
@@ -111,10 +106,12 @@ public class WebServer {
 		            	remote.close();
 		            	break;
 		            default:
-		            	System.out.println("method pas implemente");
+						String response = makeHeader("501 Not Implemented", null);
+						bufOut.write(response.getBytes());
+						bufOut.close();
+						remote.close();
 		            }
 				}
-				// remote.close();
 			} catch (Exception e) {
 				e.printStackTrace();
 				System.out.println("Error: " + e);
@@ -184,7 +181,6 @@ public class WebServer {
 	 * 	parametre de la requete (localisation de la ressource).
 	 */
 	void httpHEAD(BufferedOutputStream bufOut, String url) {
-		//supprimer les flush ?
 		String header =  "";
 		String arr[] = url.split("\\.");
 		String extension = arr[1];
@@ -193,11 +189,9 @@ public class WebServer {
 			if (ressource.exists() && ressource.isFile()) {
 				header = makeHeader("200 OK", extension);
 				bufOut.write(header.getBytes());
-				bufOut.flush();
 			} else {
 				header = makeHeader("404 not Found", null);
 				bufOut.write(header.getBytes());
-				bufOut.flush();
 			}
 			bufOut.close();
 		} catch(Exception e) {
@@ -221,9 +215,11 @@ public class WebServer {
 	 * 	parametre de la requete (localisation de la ressource).
 	 */
 	void httpGET(BufferedOutputStream bufOut, String url){
-		//supprimer flush ?
 		String header =  "";
-		// Vérifie si la ressource demandé n'a pas d'extension
+		/*
+		 *  Vérifie si la ressource demandé n'a pas d'extension
+		 *  S'il y a pas d'extension alors le client souhaite lancé une application
+		 */
 		String arr[];
 		String extension = "";
 		try {
@@ -237,11 +233,15 @@ public class WebServer {
 				bufOut.flush();
 			} catch (Exception e2) {}  
 		}
-		//*******************
 
+		//On regarde si la ressouce demandé est une app (ou si c'est une mauvaise requete)
 		if(url.substring(0, 4).equals("app?")) {
-			//si c'est app demandée
 			String s[] = url.split("\\?");
+			/*
+			 *  s[1] contient les parametre que l on souhaite donner à l'app
+			 *  On vérifie si s[1] existe
+			 *  L'envoit de null en 2e parametre de runCalculator entraine un retour de code erreur 400
+			 */
 			if (s.length > 1) {
 				// si s[1] existe
 				runCalculatorApp(bufOut, s[1]);
@@ -256,11 +256,9 @@ public class WebServer {
 					header = makeHeader("200 OK", extension);
 					bufOut.write(header.getBytes());
 					writeFileInBufOut(ressource, bufOut, "./ressources/" + url);
-					bufOut.flush();
 				} else {
 					header = makeHeader("404 not Found", null);
 					bufOut.write(header.getBytes());
-					bufOut.flush();
 				}
 				bufOut.close();
 			} catch(Exception e) {
@@ -268,7 +266,6 @@ public class WebServer {
 				try {
 					header = makeHeader("500 Internal Server Error", null);
 					bufOut.write(header.getBytes());
-					bufOut.flush();
 					bufOut.close();
 				} catch (Exception e2) {}
 			}
@@ -285,13 +282,11 @@ public class WebServer {
 	 */
 	void httpDELETE(BufferedOutputStream bufOut, String url) {
 		String header =  "";
-		String arr[] = url.split("\\.");
-		String extension = arr[1];
 		File ressource = new File("./ressources/" + url);
 		try {
 			if (ressource.exists() && ressource.isFile()) {
 				ressource.delete();
-				header = makeHeader("200 OK", extension);
+				header = makeHeader("200 OK", null);
 				bufOut.write(header.getBytes());
 				bufOut.flush();
 			} else if (!ressource.exists()){
@@ -318,7 +313,7 @@ public class WebServer {
 	 * Traite les requetes PUT et répond au client web.
 	 * La methode PUT cree une nouvelle ressource ou remplace une representation 
 	 * de la ressource ciblee par le contenu de la requete.
-	 * 
+	 * Actuellement le serveur ne gère que les fichier txt et html
 	 * @param in
 	 * 	Flux de donnees entrant (depuis le client web).
 	 * @param bufOut
@@ -331,7 +326,16 @@ public class WebServer {
 	void httpPUT(BufferedReader in, BufferedOutputStream bufOut, String url, int bodyLength) {
 		
 		String header =  "";
-		  String arr[] = url.split("\\.");
+		String arr[] = url.split("\\.");
+		//Vérifier si l'extension n'est txt ni html qui quitte la methode
+		if (arr[1] != "html" || arr[2] != "txt") {
+			try {
+				header = makeHeader("400 Bad Request", null);
+				bufOut.write(header.getBytes());
+				bufOut.flush();
+				return;
+			} catch (Exception e2) {}
+		}
 		  File ressource = new File("./ressources/" + url);	
 		  boolean newFile = false;
 	      if (ressource.exists() && ressource.isFile()) {
@@ -365,8 +369,10 @@ public class WebServer {
 	
 	/**
 	 * Traite les requetes POST et repond au client web.
-	 * La methode POST envoie des donnees au serveur. 
+	 * La methode POST envoie des donnees au serveur. Si la ressource existe, elle ajoute des données
+	 * a la ressource (elle ne l'écrase pas)
 	 * Le type du corps de la requete est indiqué par l'entete Content-Type.
+	 * Actuellement le serveur ne gère que les fichier txt et html
 	 * @param in
 	 * 	Flux de donnees entrant (depuis le client web).
 	 * @param bufOut
@@ -381,12 +387,22 @@ public class WebServer {
 	void httpPOST(BufferedReader in, BufferedOutputStream bufOut, String url, int bodyLength, String bodyContent) {
 		
 		/*
-		 * Amélioration: Lecture des fichiers audio, vidéo et images.
 		 * Actuellement bodyContent est inutile
+		 * Il sert à une amélioration possible pour poster des fichiers audio/image/video/etc. sur le server
 		 */
-		//Vérifier si extension est txt ou html
+
 		String header =  "";
-		//String arr[] = url.split("\\.");
+		String arr[] = url.split("\\.");
+		
+		//Vérifier si l'extension n'est txt ni html qui quitte la methode
+		if (arr[1] != "html" || arr[2] != "txt") {
+			try {
+				header = makeHeader("400 Bad Request", null);
+				bufOut.write(header.getBytes());
+				bufOut.flush();
+				return;
+			} catch (Exception e2) {}
+		}
 		File ressource = new File("./ressources/" + url);	
 		boolean newFile = false;
 		if (ressource.exists() && ressource.isFile()) {
@@ -488,6 +504,7 @@ public class WebServer {
 	/**
 	 * Execute l'application Calculator dans un nouveau thread. L'application Calculator
 	 * attend en parametre 2 nombres, les multiplie et renvoit le resultat.
+	 * ATTENTION: le chemin vers l'executable Calculator est absolue et correspond au PC de l'autheur
 	 * @param bufOut Flux de donnees sortant (vers le client web).
 	 * @param urlParams Contient les parametres d'execution de l'application Calculator
 	 */
@@ -496,7 +513,7 @@ public class WebServer {
 		
 		if (params != null && params.size() > 1) {
 			String[] command = new String [3];
-			command[0] = "C:\\Users\\jalle\\Travail\\Reseaux\\TP1\\TP-Progrmation-Reseaux\\HTTP\\lib\\Calculator.exe";
+			command[0] = "C:\\Users\\jalle\\Travail\\ProgReseaux\\TP\\TP-Programmation-Reseaux\\HTTP\\lib\\Calculator.exe";
 			command[1] = params.get("n1");
 			command[2] = params.get("n2");
 			RunExtApp app = new RunExtApp(bufOut, command);

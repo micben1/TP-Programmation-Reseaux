@@ -26,3 +26,19 @@ mike s'est connecte(e) !
 mike: hello
 pl s est deconnecte(e)
 mike s est deconnecte(e)
+Mike s'est connecte(e) !
+PL s'est connecte(e) !
+Mike: Hello
+PL: Hola
+Alex s'est connecte(e) !
+Alex s est deconnecte(e)
+Mike s est deconnecte(e)
+PL s est deconnecte(e)
+pl s'est connecte(e) !
+pl s est deconnecte(e)
+pl s'est connecte(e) !
+pl s est deconnecte(e)
+PL s'est connecte(e) !
+PL s est deconnecte(e)
+PL s'est connecte(e) !
+PL s est deconnecte(e)

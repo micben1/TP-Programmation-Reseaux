@@ -72,7 +72,7 @@ public class ClientThread
 	}
 	
 	/**
-	 * A chaque message reuu l'historique persistant est mise a jour
+	 * A chaque message recu l'historique persistant est mise a jour
 	 * @param line message recu
 	 * @param pw flux entrant vers le fichier texte contenant l'historique
 	 */
@@ -119,7 +119,8 @@ public class ClientThread
     			  updateHistoric(line, pw);
     		  }
     		}
-    	} catch (SocketException exception) {
+    	} catch (SocketException e) {
+            e.printStackTrace();
         	System.exit(1);
         	
         } catch (IOException e) {

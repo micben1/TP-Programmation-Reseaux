@@ -19,7 +19,7 @@ public class Client {
  
  /**
   * 
-  * @param args serveur en 1er argument, port en 2e
+  * @param args 2 arguments: port serveur en 1er, port en 2e
   * @throws IOException execption input/output
   */
     public static void main(String[] args) throws IOException {

@@ -49,8 +49,8 @@ public class RunExtApp extends Thread{
 			WebServer wb = new WebServer();
 			String header = wb.makeHeader("200 OK", "html");
 			bufOut.write(header.getBytes());
-			bufOut.write(result.getBytes());
-			bufOut.flush();
+			String response = "<p>Resultat: " + result + "<p>";
+			bufOut.write(response.getBytes());
 			bufOut.close();
 			reader.close();
 		} catch (IOException ioe){

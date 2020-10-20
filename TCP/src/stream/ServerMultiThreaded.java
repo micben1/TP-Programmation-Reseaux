@@ -19,7 +19,7 @@ import java.net.*;
 public class ServerMultiThreaded  {
   
 	/**
-	 * @param args port du serveur
+	 * @param args un argument: port du serveur
 	 */
    public static void main(String args[]){ 
     ServerSocket listenSocket;
@@ -43,6 +43,8 @@ public class ServerMultiThreaded  {
 			ClientThread ct = new ClientThread(clientSocket);
 			ct.start();
 		}
+    } catch (SocketException e) {
+        System.err.println("Error in EchoServer:" + e);
     }  catch (IOException e) {
 	      System.out.println("An error occurred.");
   	      e.printStackTrace();
