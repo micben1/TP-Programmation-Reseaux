@@ -6,19 +6,44 @@ import java.net.DatagramPacket;
 import java.net.InetAddress;
 import java.net.MulticastSocket;
 
+/**
+ * Recevoir les messages du groupe
+ * @author Mike Bensaid et Pierre-Louis
+ *
+ */
 public class MulticastReceiverThread extends Thread {
+	   /** Adresse IP virtuelle utilisée par le groupe pour communiquer*/
 	   InetAddress  groupIP;
+	   /** Le numéro de port sur lequel les messages seront attendus*/
 	   int port;
-	   String name;
+	   /**Socket Multicast abonné au groupe*/
 	   MulticastSocket socketReception;
-
+	   
+	   
+       /**
+        * Création d'une socket associée au numéro de port, ce socket joint le groupe.
+        * Après cela, il attendre des datagrammes par le socket
+        * @param groupIP IP utilisée par le groupe pour communiquer
+        * @param port port sur lequel les messages seront attendus
+        * @throws Exception
+        */
 	   MulticastReceiverThread(InetAddress groupIP, int port)  throws Exception { 
 		   this.groupIP = groupIP;
 		   this.port = port;
-		   socketReception = new MulticastSocket(port); //socket relie au port retenu
-		   socketReception.joinGroup(groupIP); //socket indique qu'il joint le groupe en indiquant l'adresse IP virtuelle de ce groupe
-		   start();  //attendre des datagrammes par le socket
+		   //socket relié au port retenu
+		   socketReception = new MulticastSocket(port); 
+		   //Le socket join le group 
+		   socketReception.joinGroup(groupIP); 
+		   //Attendre des datagrammes par le socket
+		   start();  
 	  }
+	   
+	   /**
+	    * Boucle principale du processus.
+	    * le recevoir des DatagramPacket ( messages)
+	    * Ecouter le groupe et recevez le message
+	    * 
+	    */
 
 	  public void run() {
 	    DatagramPacket message;
@@ -29,9 +54,10 @@ public class MulticastReceiverThread extends Thread {
 	    	messageContent = new byte[256];
 			  message = new DatagramPacket(messageContent, messageContent.length);
 			  try {
-		        socketReception.receive(message); //recebir mensajes desde este socket
+				//Recevez le message a partir du Socket  
+		        socketReception.receive(message); 
 		              
-		              
+		        //Lire le message reçu      
 		        text = (new DataInputStream(new ByteArrayInputStream(messageContent))).readLine();
 		       System.out.println(text);
 			  }
