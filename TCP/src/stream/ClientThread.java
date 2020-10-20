@@ -87,7 +87,7 @@ public class ClientThread
   	**/
 	public void run() {
     	  try {
-	    	FileWriter fileWriter = new FileWriter("./Code-Socket/files/historic.txt", true);
+	    	FileWriter fileWriter = new FileWriter("./files/historic.txt", true);
 	    	BufferedWriter bw = new BufferedWriter(fileWriter);
 			PrintWriter pw = new PrintWriter(bw);
   			PrintStream socOut = new PrintStream(clientSocket.getOutputStream());

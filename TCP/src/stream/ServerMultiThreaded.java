@@ -29,7 +29,7 @@ public class ServerMultiThreaded  {
           System.exit(1);
   	}
 	try {
-	      File historic = new File("./Code-Socket/files/historic.txt");
+	      File historic = new File("./files/historic.txt");
 	      if (historic .createNewFile()) {
 	        System.out.println("File created: " + historic .getName());
 	      } else {

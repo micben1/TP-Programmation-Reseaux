@@ -21,3 +21,8 @@ Mike: Hola
 Mike: Como te vas
 PL s'est déconnecté(e)
 Alex s'est connecté(e) !
+pl s'est connecte(e) !
+mike s'est connecte(e) !
+mike: hello
+pl s est deconnecte(e)
+mike s est deconnecte(e)
