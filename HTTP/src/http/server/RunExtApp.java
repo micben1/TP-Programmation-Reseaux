@@ -6,11 +6,28 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 
+/**
+ *  Executer une application extérieur.
+ *  Attend la fin de l'execution.
+ *  Récupère la réponse de l'application (écoute de son flux sortant).
+ *  Ecrit la réponse de l'application dans le flux sortant vers le client
+ * 
+ * @author Pierre-Louis Jallerat
+ *
+ */
+
 public class RunExtApp extends Thread{
 	
 	private BufferedOutputStream bufOut;
 	private String[] command;
 	
+	/**
+	 * 
+	 * @param bufO
+	 * 	Flux de sortie de données vers le client
+	 * @param cmd
+	 * 	Paramètre à données en entrée de l'application à executer
+	 */
 	public RunExtApp(BufferedOutputStream bufO, String[] cmd) {
 		this.bufOut = bufO;
 		this.command = cmd;

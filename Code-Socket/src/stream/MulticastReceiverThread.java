@@ -15,7 +15,7 @@ public class MulticastReceiverThread extends Thread {
 	   MulticastReceiverThread(InetAddress groupIP, int port)  throws Exception { 
 		   this.groupIP = groupIP;
 		   this.port = port;
-		   socketReception = new MulticastSocket(port); //socket relié au port retenu
+		   socketReception = new MulticastSocket(port); //socket relie au port retenu
 		   socketReception.joinGroup(groupIP); //socket indique qu'il joint le groupe en indiquant l'adresse IP virtuelle de ce groupe
 		   start();  //attendre des datagrammes par le socket
 	  }

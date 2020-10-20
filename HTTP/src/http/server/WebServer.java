@@ -21,10 +21,10 @@ import java.util.HashMap;
  * Server Web TP Réseau INSA Lyon
  * 2020
  * 
- * WebServer est serveur web gérant différente requête (GET, POST, DELETE, etc.)
- * permettant d'accèder ou d'ajouter des ressources au serveur
+ * WebServer est serveur web gérant differente requete (GET, POST, DELETE, etc.)
+ * permettant d'acceder ou d'ajouter des ressources au serveur
  * 
- * @author Mickeal Bensaïd & Pierre-Louis JALLERAT
+ * @author Mickeal Bensaid et Pierre-Louis JALLERAT
  * @version 1.0
  */
 public class WebServer {
@@ -68,7 +68,7 @@ public class WebServer {
 					header  += str + "\n";
 				}
 
-				//Gère le premier msg nul
+				//Gère le premier message nul
 				if (!header.substring(0, 4).equals("null") && header.length() > 5) {
 					String[] headerInfo = new String[4];
 					/*
@@ -81,14 +81,8 @@ public class WebServer {
 					readHeader(header, headerInfo);
 					String method = headerInfo[0];
 					String url = headerInfo[1];
-					//int bodyLength = Integer.parseInt(headerInfo[2]);
-
-					//for (int i = 0; i < 4; i++) {
-					//	System.out.println(headerInfo[i]);
-					//}
-					//String body = readBody(in, bodyLength);
-					//System.out.println(body);
 					int bodyLength;
+					
 		            switch(method) {
 		            case "GET":
 		            	httpGET(bufOut, url);
@@ -127,10 +121,21 @@ public class WebServer {
 			}
 		}
 	}
+	/**
+	 * Lis le contenu de l'entete et extrait les informations utiles.
 
-	void readHeader (String completeMsg, String[] headerInfo) {
-		if (completeMsg != null && completeMsg.length() > 0) {
-			String arr[] = completeMsg.split("[ \n]");
+	 * @param header
+	 * 	String contenant l'integralite du header
+	 * @param headerInfo
+	 * 	Tableau rempli par les informations utiles contenu dans l'entete
+	 *	0: la methode (GET, PUT, etc.)
+	 *	1: l'URL 
+	 *	2: la taille du corps de la requete
+	 *	3: le type de contenu du corps de la requete
+	 */
+	void readHeader (String header, String[] headerInfo) {
+		if (header != null && header.length() > 0) {
+			String arr[] = header.split("[ \n]");
 			//method
 			headerInfo[0] = arr[0];
 			//url
@@ -146,6 +151,16 @@ public class WebServer {
 		}
 	}
 
+	/**
+	 * Lis le contenu du corps de la requete.
+	 * 
+	 * @param in
+	 * 	Le flux de donnée entrante donnant accès aux corps de la requete.
+	 * @param length
+	 * 	La longueur du corps de la requete.
+	 * @return
+	 * 	Corps de la requete sous forme de String.
+	 */
 	String readBody (BufferedReader in, int length) {
 		String body = "";
 		try {
@@ -158,8 +173,18 @@ public class WebServer {
 		return body;
 	}
 
-	//supprimer les flush ?
+	/**
+	 * Traite les requete HTTP de type HEAD et repond au client web
+	 * La methode HEAD demande les en-têtes qui seraient retournés 
+	 * si la ressource specifiee etait demandée avec une methode HTTP GET. 
+	 * 
+	 * @param bufOut
+	 * 	Flux de donnees sortant (vers le client web)?
+	 * @param url
+	 * 	parametre de la requete (localisation de la ressource).
+	 */
 	void httpHEAD(BufferedOutputStream bufOut, String url) {
+		//supprimer les flush ?
 		String header =  "";
 		String arr[] = url.split("\\.");
 		String extension = arr[1];
@@ -185,8 +210,18 @@ public class WebServer {
 		}
 	}
 	
-	//supprimer flush ?
+	/**
+	 * Traite les requetes HTTP de type GET et repond au client web
+	 * La methode GET demande une représentation de la ressource specifiee. 
+	 * Elle uniquement être utilisees afin de récupérer des donnees.
+	 * 
+	 * @param bufOut
+	 * 	Flux de donnees sortant (vers le client web).
+	 * @param url
+	 * 	parametre de la requete (localisation de la ressource).
+	 */
 	void httpGET(BufferedOutputStream bufOut, String url){
+		//supprimer flush ?
 		String header =  "";
 		// Vérifie si la ressource demandé n'a pas d'extension
 		String arr[];
@@ -239,8 +274,16 @@ public class WebServer {
 			}
 		}
 	}
-	
-	private void httpDELETE(BufferedOutputStream bufOut, String url) {
+	/**
+	 * Traite les requetes DELETE et répond au client web
+	 * La methode DELETE supprime la ressource indiquee.
+	 * 
+	 * @param bufOut
+	 * 	Flux de donnees sortant (vers le client web).
+	 * @param url
+	 * 	parametre de la requete (localisation de la ressource).
+	 */
+	void httpDELETE(BufferedOutputStream bufOut, String url) {
 		String header =  "";
 		String arr[] = url.split("\\.");
 		String extension = arr[1];
@@ -271,7 +314,21 @@ public class WebServer {
 		}
 	}
 
-	private void httpPUT(BufferedReader in, BufferedOutputStream bufOut, String url, int bodyLength) {
+	/**
+	 * Traite les requetes PUT et répond au client web.
+	 * La methode PUT cree une nouvelle ressource ou remplace une representation 
+	 * de la ressource ciblee par le contenu de la requete.
+	 * 
+	 * @param in
+	 * 	Flux de donnees entrant (depuis le client web).
+	 * @param bufOut
+	 * 	Flux de donnees sortant (vers le client web).
+	 * @param url
+	 * 	parametre de la requete (localisation de la ressource).
+	 * @param bodyLength
+	 * 	Taille du corps de la requete à ecrire dans une ressource serveur.
+	 */
+	void httpPUT(BufferedReader in, BufferedOutputStream bufOut, String url, int bodyLength) {
 		
 		String header =  "";
 		  String arr[] = url.split("\\.");
@@ -306,8 +363,28 @@ public class WebServer {
 		  }
 	}
 	
-	//Vérifier si extension est txt ou html
-	private void httpPOST(BufferedReader in, BufferedOutputStream bufOut, String url, int bodyLength, String bodyContent) {
+	/**
+	 * Traite les requetes POST et repond au client web.
+	 * La methode POST envoie des donnees au serveur. 
+	 * Le type du corps de la requete est indiqué par l'entete Content-Type.
+	 * @param in
+	 * 	Flux de donnees entrant (depuis le client web).
+	 * @param bufOut
+	 * 	Flux de donnees sortant (vers le client web).
+	 * @param url
+	 * 	parametre de la requete (localisation de la ressource).
+	 * @param bodyLength
+	 * 	Taille du corps de la requete a ecrire dans une ressource serveur.
+	 * @param bodyContent
+	 * 	Type des donnees envoyees par le client.
+	 */
+	void httpPOST(BufferedReader in, BufferedOutputStream bufOut, String url, int bodyLength, String bodyContent) {
+		
+		/*
+		 * Amélioration: Lecture des fichiers audio, vidéo et images.
+		 * Actuellement bodyContent est inutile
+		 */
+		//Vérifier si extension est txt ou html
 		String header =  "";
 		//String arr[] = url.split("\\.");
 		File ressource = new File("./ressources/" + url);	
@@ -342,7 +419,17 @@ public class WebServer {
 		}
 	}
 
-	public void writeFileInBufOut (File ressource, BufferedOutputStream bufOut, String url) {
+	/**
+	 * Cette methode lit le fichier en parametre et ecrit les donnees associees 
+	 * dans le flux de sortie (vers le client)
+	 * @param ressource
+	 * 	Fichier que l'on souhaite renvoye au client
+	 * @param bufOut
+	 * 	Flux de donnees sortant (vers le client web).
+	 * @param url
+	 * 	parametre de la requete (localisation de la ressource).
+	 */
+	void writeFileInBufOut (File ressource, BufferedOutputStream bufOut, String url) {
 		try {      
 			BufferedInputStream fileIn = new BufferedInputStream(new FileInputStream(ressource));
 			byte[] buffer = new byte[256];
@@ -361,7 +448,14 @@ public class WebServer {
 		}
 	}
 
-	public String makeHeader(String status, String extension) {
+	/**
+	 * Ecrit l'entete de la réponse à renvoyer au client en fonction du status de la requete
+	 * et, s'il y a un fichier à renvoyer, de son extension
+	 * @param status Code de status HTTP de la requete à renvoyer
+	 * @param extension Si la requete ne renvoit pas de fichier, extension = null sinon extension contient l'extension du fichier
+	 * @return L'entete à renvoyer au client
+	 */
+	String makeHeader(String status, String extension) {
 		String header = "HTTP/1.0 " + status + "\r\n";
 		String type = "";
 		if (extension != null) {
@@ -391,12 +485,18 @@ public class WebServer {
 		return header;
 	}
 
+	/**
+	 * Execute l'application Calculator dans un nouveau thread. L'application Calculator
+	 * attend en parametre 2 nombres, les multiplie et renvoit le resultat.
+	 * @param bufOut Flux de donnees sortant (vers le client web).
+	 * @param urlParams Contient les parametres d'execution de l'application Calculator
+	 */
 	void runCalculatorApp(BufferedOutputStream bufOut, String urlParams) {
 		HashMap<String, String> params = readParams(bufOut, urlParams);
 		
 		if (params != null && params.size() > 1) {
 			String[] command = new String [3];
-			command[0] = "C:\\Users\\jalle\\Travail\\Reseaux\\TP1\\TP-Progrmation-Reseaux\\HTTP\\lib\\Calculatrice.exe";
+			command[0] = "C:\\Users\\jalle\\Travail\\Reseaux\\TP1\\TP-Progrmation-Reseaux\\HTTP\\lib\\Calculator.exe";
 			command[1] = params.get("n1");
 			command[2] = params.get("n2");
 			RunExtApp app = new RunExtApp(bufOut, command);
@@ -412,6 +512,13 @@ public class WebServer {
 		}
 	}
 
+	/**
+	 * Analyse l'URL de la requete et renvoit une collection chaque parametre
+	 * et sa valeur associee
+	 * @param bufOut Flux de donnees sortant (vers le client web).
+	 * @param urlParams URL de la requete émise pas le client
+	 * @return Chaque "key" contient le nom du parametre et "value" contient la valeur associe.
+	 */
 	HashMap<String, String> readParams(BufferedOutputStream bufOut, String urlParams) {
 		if (urlParams == null || urlParams.length() < 3 ) return null;
 		String paramsList [] = urlParams.split("&");
@@ -428,6 +535,7 @@ public class WebServer {
 		return params;
 	}
 
+	
 	/**
 	 * Start the application.
 	 * 

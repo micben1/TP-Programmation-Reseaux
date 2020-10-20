@@ -1,18 +1,27 @@
+/**
+ * Client
+ * @author Pierre-Louis Jallerat et Mickael Bensaid
+ */
 package stream;
 
 import java.io.*;
 import java.net.*;
 import java.net.SocketException;
-
+/**
+ * Represente un client. Cette classe instancie un socket d'emission et un socket d'ecoute.
+ * Le socket d'ecoute est lance dans un autre thread via la classe ServerListenerThread
+ *
+ */
 
 
 public class Client {
 
  
-  /**
-  *  main method
-  *  accepts a connection, receives a message from client then sends an echo to the client
-  **/
+ /**
+  * 
+  * @param args serveur en 1er argument, port en 2e
+  * @throws IOException execption input/output
+  */
     public static void main(String[] args) throws IOException {
 
         Socket clientSocket = null;
@@ -33,7 +42,7 @@ public class Client {
 		    System.out.println("Client running");
 	    
 	        String line;
-	        System.out.println("Pour vous déconnectez entrer '.'");
+	        System.out.println("Pour vous deconnectez entrer '.'");
 	        System.out.print("Entrez votre nom d'utilisateur: ");
 	        ServerListenerThread listenerSocket = new ServerListenerThread(clientSocket);
 	        listenerSocket.start();
@@ -50,7 +59,7 @@ public class Client {
 	      clientSocket.close();
 	      
         } catch (SocketException exception) {
-        	System.out.println("deconnecté(e)");
+        	System.out.println("deconnecte(e)");
         	System.exit(1);
         	
         } catch (UnknownHostException e) {

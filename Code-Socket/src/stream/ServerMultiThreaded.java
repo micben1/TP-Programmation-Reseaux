@@ -1,8 +1,6 @@
 /***
  * EchoServer
- * Example of a TCP server
- * Date: 10/01/04
- * Authors:
+ * @author Pierre-Louis Jallerat et Mickael Bensaid
  */
 
 package stream;
@@ -10,13 +8,19 @@ package stream;
 import java.io.*;
 import java.net.*;
 
+/**
+ * 
+ * Cette classe ecoute les demandes de connexions des clients
+ * Pour chaque client, la classe ClientThread est intancie dans un nouveau thread et
+ * gere l'emission et la reception de message
+ *
+ */
+
 public class ServerMultiThreaded  {
   
- 	/**
-  	* main method
-	* @param EchoServer port
-  	* 
-  	**/
+	/**
+	 * @param args port du serveur
+	 */
    public static void main(String args[]){ 
     ServerSocket listenSocket;
     
