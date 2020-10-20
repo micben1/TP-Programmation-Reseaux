@@ -5,8 +5,11 @@ package http.server;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
@@ -15,13 +18,13 @@ import java.net.Socket;
 import java.util.HashMap;
 
 /**
- * Example program from Chapter 1 Programming Spiders, Bots and Aggregators in
- * Java Copyright 2001 by Jeff Heaton
+ * Server Web TP Réseau INSA Lyon
+ * 2020
  * 
- * WebServer is a very simple web-server. Any request is responded with a very
- * simple web-page.
+ * WebServer est serveur web gérant différente requête (GET, POST, DELETE, etc.)
+ * permettant d'accèder ou d'ajouter des ressources au serveur
  * 
- * @author Jeff Heaton
+ * @author Mickeal Bensaïd & Pierre-Louis JALLERAT
  * @version 1.0
  */
 public class WebServer {
@@ -69,11 +72,11 @@ public class WebServer {
 				if (!header.substring(0, 4).equals("null") && header.length() > 5) {
 					String[] headerInfo = new String[4];
 					/*
-        	headerInfo:
-        	0: method (GET, PUT, etc.)
-        	1: URL
-        	2: body length
-        	3: body content
+		        	headerInfo:
+		        	0: method (GET, PUT, etc.)
+		        	1: URL
+		        	2: body length
+		        	3: body content
 					 */
 					readHeader(header, headerInfo);
 					String method = headerInfo[0];
@@ -85,19 +88,37 @@ public class WebServer {
 					//}
 					//String body = readBody(in, bodyLength);
 					//System.out.println(body);
-					switch(method) {
-					case "GET":
-						httpGET(bufOut, url);
-						break;
-					case "HEAD":
-						httpHEAD(bufOut, url);
-						break;
-					case "DELETE":
-						httpDELETE(bufOut, url);
-						break;
-					default:
-						System.out.println("method pas impl�ment�");
-					}
+					int bodyLength;
+		            switch(method) {
+		            case "GET":
+		            	httpGET(bufOut, url);
+		            	break;
+		            case "HEAD":
+		            	httpHEAD(bufOut, url);
+		            	bufOut.close();
+		            	remote.close();
+		            	break;
+		            case "DELETE":
+		                httpDELETE(bufOut, url);
+		                bufOut.close();
+		                remote.close();
+		                break;
+		            case "PUT":
+		            	bodyLength = Integer.parseInt(headerInfo[2]);
+		            	httpPUT(in, bufOut, url, bodyLength);
+		            	bufOut.close();
+		            	remote.close();
+		            	break;
+		            case "POST":
+		            	String bodyContent = headerInfo[3];
+		            	bodyLength = Integer.parseInt(headerInfo[2]);
+		            	httpPOST(in, bufOut, url, bodyLength, bodyContent);
+		            	bufOut.close();
+		            	remote.close();
+		            	break;
+		            default:
+		            	System.out.println("method pas implemente");
+		            }
 				}
 				// remote.close();
 			} catch (Exception e) {
@@ -138,6 +159,87 @@ public class WebServer {
 	}
 
 	//supprimer les flush ?
+	void httpHEAD(BufferedOutputStream bufOut, String url) {
+		String header =  "";
+		String arr[] = url.split("\\.");
+		String extension = arr[1];
+		File ressource = new File("./ressources/" + url);
+		try {
+			if (ressource.exists() && ressource.isFile()) {
+				header = makeHeader("200 OK", extension);
+				bufOut.write(header.getBytes());
+				bufOut.flush();
+			} else {
+				header = makeHeader("404 not Found", null);
+				bufOut.write(header.getBytes());
+				bufOut.flush();
+			}
+			bufOut.close();
+		} catch(Exception e) {
+			e.printStackTrace();
+			try {
+				header = makeHeader("500 Internal Server Error", null);
+				bufOut.write(header.getBytes());
+				bufOut.close();
+			} catch (Exception e2) {}
+		}
+	}
+	
+	//supprimer flush ?
+	void httpGET(BufferedOutputStream bufOut, String url){
+		String header =  "";
+		// Vérifie si la ressource demandé n'a pas d'extension
+		String arr[];
+		String extension = "";
+		try {
+			arr = url.split("\\.");
+			if (arr.length > 1) extension = arr[1];
+		} catch (Exception e) {
+			e.printStackTrace();
+			try {
+				header = makeHeader("400 Bad Request", null);
+				bufOut.write(header.getBytes());
+				bufOut.flush();
+			} catch (Exception e2) {}  
+		}
+		//*******************
+
+		if(url.substring(0, 4).equals("app?")) {
+			//si c'est app demandée
+			String s[] = url.split("\\?");
+			if (s.length > 1) {
+				// si s[1] existe
+				runCalculatorApp(bufOut, s[1]);
+			} else {
+				runCalculatorApp(bufOut, null);
+			}
+		} else {
+			//si c'est une ressource
+			File ressource = new File("./ressources/" + url);
+			try {
+				if (ressource.exists() && ressource.isFile()) {
+					header = makeHeader("200 OK", extension);
+					bufOut.write(header.getBytes());
+					writeFileInBufOut(ressource, bufOut, "./ressources/" + url);
+					bufOut.flush();
+				} else {
+					header = makeHeader("404 not Found", null);
+					bufOut.write(header.getBytes());
+					bufOut.flush();
+				}
+				bufOut.close();
+			} catch(Exception e) {
+				e.printStackTrace();
+				try {
+					header = makeHeader("500 Internal Server Error", null);
+					bufOut.write(header.getBytes());
+					bufOut.flush();
+					bufOut.close();
+				} catch (Exception e2) {}
+			}
+		}
+	}
+	
 	private void httpDELETE(BufferedOutputStream bufOut, String url) {
 		String header =  "";
 		String arr[] = url.split("\\.");
@@ -169,7 +271,76 @@ public class WebServer {
 		}
 	}
 
+	private void httpPUT(BufferedReader in, BufferedOutputStream bufOut, String url, int bodyLength) {
+		
+		String header =  "";
+		  String arr[] = url.split("\\.");
+		  File ressource = new File("./ressources/" + url);	
+		  boolean newFile = false;
+	      if (ressource.exists() && ressource.isFile()) {
+	    	  newFile = true;
+	      }
+			
+		  try {
+		      BufferedOutputStream OutFile = new BufferedOutputStream(new FileOutputStream(ressource)); 
+		      String contenu = readBody(in, bodyLength);
+		      OutFile.write(contenu.getBytes());
+		      OutFile.flush();
+		      OutFile.close();
+			  if (newFile) {
+				  header = makeHeader("200 OK", null);
+				  bufOut.write(header.getBytes());
+				  bufOut.flush();
+			  } else {
+				  header = makeHeader("201 Created", null);
+				  bufOut.write(header.getBytes());
+				  bufOut.flush();
+			  }
+		  } catch(Exception e) {
+			  e.printStackTrace();
+			  try {
+				  header = makeHeader("500 Internal Server Error", null);
+				  bufOut.write(header.getBytes());
+				  bufOut.flush();
+			  } catch (Exception e2) {}
+		  }
+	}
+	
+	//Vérifier si extension est txt ou html
+	private void httpPOST(BufferedReader in, BufferedOutputStream bufOut, String url, int bodyLength, String bodyContent) {
+		String header =  "";
+		//String arr[] = url.split("\\.");
+		File ressource = new File("./ressources/" + url);	
+		boolean newFile = false;
+		if (ressource.exists() && ressource.isFile()) {
+			newFile = true;
+		}
 
+		try {
+	    	FileWriter fileWriter = new FileWriter("./ressources/" + url, true);
+	    	BufferedWriter bw = new BufferedWriter(fileWriter);
+			PrintWriter pw = new PrintWriter(bw);
+			String contenu = readBody(in, bodyLength);
+			pw.write(contenu + "\n");
+			pw.close();
+			if (newFile) {
+				header = makeHeader("200 OK", null);
+				bufOut.write(header.getBytes());
+				bufOut.flush();
+			} else {
+				header = makeHeader("201 Created", null);
+				bufOut.write(header.getBytes());
+				bufOut.flush();
+			}
+		} catch(Exception e) {
+			e.printStackTrace();
+			try {
+				header = makeHeader("500 Internal Server Error", null);
+				bufOut.write(header.getBytes());
+				bufOut.flush();
+			} catch (Exception e2) {}
+		}
+	}
 
 	public void writeFileInBufOut (File ressource, BufferedOutputStream bufOut, String url) {
 		try {      
@@ -187,87 +358,6 @@ public class WebServer {
 				bufOut.write(header.getBytes());
 				bufOut.flush();
 			} catch (Exception e2) {};
-		}
-	}
-
-	//supprimer flush ?
-	void httpGET(BufferedOutputStream bufOut, String url){
-		String header =  "";
-		// Vérifie si la ressource demandé n'a pas d'extension
-		String arr[];
-		String extension = "";
-		try {
-			arr = url.split("\\.");
-			if (arr.length > 1) extension = arr[1];
-		} catch (Exception e) {
-			e.printStackTrace();
-			try {
-				header = makeHeader("400 Bad Request", null);
-				bufOut.write(header.getBytes());
-				bufOut.flush();
-			} catch (Exception e2) {}  
-		}
-		//*******************
-
-		if(url.substring(0, 4).equals("app?")) {
-			//si c'est app demandée
-			String s[] = url.split("\\?");
-			if (s.length > 1) {
-				// si s[1] existe
-				runApp(bufOut, s[1]);
-			} else {
-				runApp(bufOut, null);
-			}
-		} else {
-			//si c'est une ressource
-			File ressource = new File("./ressources/" + url);
-			try {
-				if (ressource.exists() && ressource.isFile()) {
-					header = makeHeader("200 OK", extension);
-					bufOut.write(header.getBytes());
-					writeFileInBufOut(ressource, bufOut, "./ressources/" + url);
-					bufOut.flush();
-				} else {
-					header = makeHeader("404 not Found", null);
-					bufOut.write(header.getBytes());
-					bufOut.flush();
-				}
-				bufOut.close();
-			} catch(Exception e) {
-				e.printStackTrace();
-				try {
-					header = makeHeader("500 Internal Server Error", null);
-					bufOut.write(header.getBytes());
-					bufOut.flush();
-					bufOut.close();
-				} catch (Exception e2) {}
-			}
-		}
-	}
-
-	void httpHEAD(BufferedOutputStream bufOut, String url) {
-		String header =  "";
-		String arr[] = url.split("\\.");
-		String extension = arr[1];
-		File ressource = new File("./ressources/" + url);
-		try {
-			if (ressource.exists() && ressource.isFile()) {
-				header = makeHeader("200 OK", extension);
-				bufOut.write(header.getBytes());
-				bufOut.flush();
-			} else {
-				header = makeHeader("404 not Found", null);
-				bufOut.write(header.getBytes());
-				bufOut.flush();
-			}
-			bufOut.close();
-		} catch(Exception e) {
-			e.printStackTrace();
-			try {
-				header = makeHeader("500 Internal Server Error", null);
-				bufOut.write(header.getBytes());
-				bufOut.close();
-			} catch (Exception e2) {}
 		}
 	}
 
@@ -301,7 +391,7 @@ public class WebServer {
 		return header;
 	}
 
-	void runApp(BufferedOutputStream bufOut, String urlParams) {
+	void runCalculatorApp(BufferedOutputStream bufOut, String urlParams) {
 		HashMap<String, String> params = readParams(bufOut, urlParams);
 		
 		if (params != null && params.size() > 1) {
