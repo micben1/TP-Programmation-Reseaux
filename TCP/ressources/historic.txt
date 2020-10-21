@@ -4,3 +4,28 @@ mike: Hola
 PL: Bonjour
 mike s est deconnecte(e)
 PL s est deconnecte(e)
+Alex s'est connecte(e) !
+PL s'est connecte(e) !
+PL: Bjr
+Alex: Cc
+PL s est deconnecte(e)
+Alex s est deconnecte(e)
+PL s'est connecte(e) !
+PL: Bonjou
+PL s est deconnecte(e)
+PL s'est connecte(e) !
+PL s est deconnecte(e)
+h s'est connecte(e) !
+h s est deconnecte(e)
+pl s'est connecte(e) !
+pl: hola
+pl s est deconnecte(e)
+mike s'est connecte(e) !
+pl s'est connecte(e) !
+pl: hello
+mike: cc
+enzo s'est connecte(e) !
+enzo: bjr
+mike s est deconnecte(e)
+enzo s est deconnecte(e)
+pl s est deconnecte(e)

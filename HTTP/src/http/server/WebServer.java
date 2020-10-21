@@ -256,6 +256,7 @@ public class WebServer {
 				} else {
 					header = makeHeader("404 not Found", null);
 					bufOut.write(header.getBytes());
+					writeFileInBufOut(ressource, bufOut, "./ressources/homePage.html");
 				}
 				bufOut.close();
 			} catch(Exception e) {
@@ -283,7 +284,7 @@ public class WebServer {
 		try {
 			if (ressource.exists() && ressource.isFile()) {
 				ressource.delete();
-				header = makeHeader("200 OK", null);
+				header = makeHeader("410 Gone", null);
 				bufOut.write(header.getBytes());
 				bufOut.flush();
 			} else if (!ressource.exists()){
@@ -325,7 +326,7 @@ public class WebServer {
 		String header =  "";
 		String arr[] = url.split("\\.");
 		//Vérifier si l'extension n'est txt ni html qui quitte la methode
-		if (arr[1] != "html" || arr[2] != "txt") {
+		if (!arr[1].equals("html") && !arr[1].equals("txt")) {
 			try {
 				header = makeHeader("400 Bad Request", null);
 				bufOut.write(header.getBytes());
@@ -346,7 +347,7 @@ public class WebServer {
 		      OutFile.flush();
 		      OutFile.close();
 			  if (newFile) {
-				  header = makeHeader("200 OK", null);
+				  header = makeHeader("204 No Content", null);
 				  bufOut.write(header.getBytes());
 				  bufOut.flush();
 			  } else {
@@ -392,7 +393,7 @@ public class WebServer {
 		String arr[] = url.split("\\.");
 		
 		//Vérifier si l'extension n'est txt ni html qui quitte la methode
-		if (arr[1] != "html" || arr[2] != "txt") {
+		if (!arr[1].equals("html") && !arr[1].equals("txt")) {
 			try {
 				header = makeHeader("400 Bad Request", null);
 				bufOut.write(header.getBytes());
@@ -400,6 +401,7 @@ public class WebServer {
 				return;
 			} catch (Exception e2) {}
 		}
+		
 		File ressource = new File("./ressources/" + url);	
 		boolean newFile = false;
 		if (ressource.exists() && ressource.isFile()) {

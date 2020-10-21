@@ -19,7 +19,7 @@ public class Client {
  
  /**
   * 
-  * @param args 2 arguments: port serveur en 1er, port en 2e
+  * @param args 2 arguments: adresse serveur en 1er, port en 2e
   * @throws IOException execption input/output
   */
     public static void main(String[] args) throws IOException {
@@ -27,6 +27,7 @@ public class Client {
         Socket clientSocket = null;
         PrintStream socOut = null;
         BufferedReader stdIn = null;
+        BufferedReader socIn = null;
         String name = "";
 
         if (args.length != 2) {
@@ -40,11 +41,14 @@ public class Client {
 		    socOut = new PrintStream(clientSocket.getOutputStream());
 		    stdIn = new BufferedReader(new InputStreamReader(System.in));
 		    System.out.println("Client running");
+		    
+    		socIn = new BufferedReader(
+        			new InputStreamReader(clientSocket.getInputStream())); 
 	    
 	        String line;
 	        System.out.println("Pour vous deconnectez entrer '.'");
 	        System.out.print("Entrez votre nom d'utilisateur: ");
-	        ServerListenerThread listenerSocket = new ServerListenerThread(clientSocket);
+	        ServerListenerThread listenerSocket = new ServerListenerThread(socIn);
 	        listenerSocket.start();
 	        while (true) {
 	        	line=stdIn.readLine();
@@ -54,7 +58,7 @@ public class Client {
 	         	}
 	        }
 	      stdIn.close();
-   		  listenerSocket.closeConnection(); //close the input BufferedReader
+	      socIn.close();
    		  socOut.close();
 	      clientSocket.close();
 	      

@@ -18,8 +18,8 @@ public class Multicast {
 		BufferedReader stdIn = new BufferedReader(new InputStreamReader(System.in));
 		System.out.print("Entrez votre nom d'utilisateur: ");
 		String name = stdIn.readLine();
-		InetAddress groupIP = InetAddress.getByName("224.6.6.6");
-		int port = 8088; 
+		InetAddress groupIP = InetAddress.getByName("230.0.0.0");
+		int port = 1100; 
 		/** Le thread en charge de recevoir du message*/
 		new MulticastReceiverThread(groupIP, port);
 		/** Le thread en charge de l'envoi du message*/

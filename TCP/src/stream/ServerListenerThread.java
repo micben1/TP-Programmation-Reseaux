@@ -7,35 +7,21 @@ package stream;
 import java.io.*;
 import java.net.Socket;
 /**
- * Classe recevant en parametre le socket d'ecoute d'un client.
+ * Classe recevant en parametre le flux d'ecoute du socket d'un client.
  * Elle est executee dans un autre thread
  * Son but est de recevoir les messages du serveur vers le client qui la instancie
  *
  */
 public class ServerListenerThread extends Thread {
 		
-	private Socket clientSocket;
 	private BufferedReader socIn;
 	
 	/**
 	 * Constructeur
-	 * @param s Socket d'ecoute du client
+	 * @param socIn flux d'ecoute du socket
 	 */
-	ServerListenerThread(Socket s) {
-		this.clientSocket = s;
-	}
-	
-	/**
-	 * Cette methode est appelee dans Client.java pour 
-	 * fermer le socket d ecoute du client.
-	 */
-	public void closeConnection() { 
-	    try {
-	        socIn.close();
-	    } catch (IOException ex) {
-	    	ex.printStackTrace();
-	        System.out.println("Error closing the socket and streams");
-	    }
+	ServerListenerThread(BufferedReader socIn) {
+		this.socIn = socIn;
 	}
 
  	/**
@@ -43,8 +29,6 @@ public class ServerListenerThread extends Thread {
   	**/
 	public void run() {
     	  try {
-    		socIn = new BufferedReader(
-    			new InputStreamReader(clientSocket.getInputStream())); 
     		while (true) {
     		  String line = socIn.readLine();
     		  System.out.println(line);
